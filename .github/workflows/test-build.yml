@@ -65,7 +65,11 @@ jobs:
         run: |
           mkdir -p /tmp/.buildx-cypress
 
-          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- ./cypress > /tmp/.buildx-cypress/img.tar
+          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- ./cypress > ./cypress.tar
+
+          wget https://github.com/jwilder/docker-squash/releases/download/v0.2.0/docker-squash-linux-amd64-v0.2.0.tar.gz
+          tar -C ./ -xzvf ./docker-squash-linux-amd64-v0.2.0.tar.gz
+          ./docker-squash -i ./cypress.tar -o /tmp/.buildx-cypress/img.tar
 
   e2e:
     runs-on: ubuntu-latest
@@ -95,19 +99,7 @@ jobs:
 
       - name: Load cached cypress image
         run: |
-          # docker load --input /tmp/.buildx-cypress/img.tar
-          docker import \
-            -c "ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-            -c "ENV CHROME_VERSION=85.0.4183.121" \
-            -c "ENV DBUS_SESSION_BUS_ADDRESS=/dev/null" \
-            -c "ENV CI=1" \
-            -c "ENV QT_X11_NO_MITSHM=1" \
-            -c "ENV _X11_NO_MITSHM=1" \
-            -c "ENV _MITSHM=0" \
-            -c "ENV CYPRESS_CACHE_FOLDER=/root/.cache/Cypress" \
-            -c "ENV TERM=xterm" \
-            -c "ENTRYPOINT [\"npm\" \"run\" \"cy:run\"]" \
-            /tmp/.buildx-cypress/img.tar e2e-cypress:latest
+          docker load --input /tmp/.buildx-cypress/img.tar
 
       - name: Load app cache
         id: cached-image
