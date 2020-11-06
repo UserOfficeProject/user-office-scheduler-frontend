@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Test && Build && Push
+name: Build, Test and Push
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the develop branch
@@ -41,9 +41,30 @@ jobs:
 
           docker buildx build --cache-to="type=local,dest=/tmp/.buildx-layer-cache,mode=max" --cache-from="type=local,src=/tmp/.buildx-layer-cache" -t duo-scheduler-frontend:${{ github.sha }} -o type=docker,dest=- . > /tmp/.buildx-image-cache/img.tar
 
-  e2e:
+  cypress:
     runs-on: ubuntu-latest
     needs: build
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Cache cypress
+        id: cached-cypress-image
+        uses: actions/cache@v2
+        with:
+          path: |
+            /tmp/.buildx-cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('cypress/Dockerfile') }}
+
+      - name: Build and cache cypress image
+        if: steps.cached-cypress-image.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/.buildx-cypress
+
+          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- ./cypress > /tmp/.buildx-cypress/img.tar
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: cypress
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -61,12 +82,11 @@ jobs:
             /tmp/.buildx-cypress
           key: ${{ runner.os }}-cypress-${{ hashFiles('cypress/Dockerfile') }}
 
-      - name: Build and cache cypress image
+      - name: Fail on cypress cache miss
         if: steps.cached-cypress-image.outputs.cache-hit != 'true'
         run: |
-          mkdir -p /tmp/.buildx-cypress
-
-          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- ./cypress > /tmp/.buildx-cypress/img.tar
+          echo "No cache hit!"
+          exit 1
 
       - name: Import cached cypress image
         run: |
