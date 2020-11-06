@@ -53,6 +53,8 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.head_ref }}
       - name: Build
         run: |
+          ls -la /tmp
+
           docker buildx build --cache-to="type=local,dest=/tmp/.buildx-layer-cache,mode=max" --cache-from="type=local,src=/tmp/.buildx-layer-cache" -o type=docker,dest=- . > /tmp/.buildx-image-cache/img.tar
 
           ls -la /tmp/.buildx-layer-cache
