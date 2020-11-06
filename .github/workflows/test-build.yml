@@ -47,6 +47,11 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
       - name: Cache cypress
         id: cached-cypress-image
         uses: actions/cache@v2
@@ -59,9 +64,8 @@ jobs:
         if: steps.cached-cypress-image.outputs.cache-hit != 'true'
         run: |
           mkdir -p /tmp/.buildx-cypress
-          cd ./cypress
 
-          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- . > /tmp/.buildx-cypress/img.tar
+          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- ./cypress > /tmp/.buildx-cypress/img.tar
 
   e2e:
     runs-on: ubuntu-latest
