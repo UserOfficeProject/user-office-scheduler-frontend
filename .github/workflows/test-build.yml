@@ -51,9 +51,9 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
       - name: Build
         run: |
-          buildx build \ 
+          docker buildx build \ 
             --cache-from="type=local,src=/tmp/.buildx-cache" \ 
-            --cache-to="type=local,dest=/tmp/.buildx-cache" \ 
+            --cache-to="type=local,dest=/tmp/.buildx-cache,mode=max" \ 
             --tag duo-scheduler-frontend:${{ github.sha }}
 
       - name: Resolve required repositories
@@ -162,4 +162,3 @@ jobs:
           push: true
           tags: dmsc/duo-scheduler-frontend:${{ github.head_ref }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
