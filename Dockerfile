@@ -1,7 +1,5 @@
 FROM node:12-alpine as build-stage
 
-ARG PUBLIC_URL
-
 WORKDIR /app
 COPY package*.json /app/
 
