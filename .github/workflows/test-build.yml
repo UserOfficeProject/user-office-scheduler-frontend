@@ -65,11 +65,7 @@ jobs:
         run: |
           mkdir -p /tmp/.buildx-cypress
 
-          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- ./cypress > ./cypress.tar
-
-          wget https://github.com/jwilder/docker-squash/releases/download/v0.2.0/docker-squash-linux-amd64-v0.2.0.tar.gz
-          tar -C ./ -xzvf ./docker-squash-linux-amd64-v0.2.0.tar.gz
-          sudo ./docker-squash -i ./cypress.tar -o /tmp/.buildx-cypress/img.tar
+          docker buildx build --squash -t e2e-cypress:latest -o type=docker,dest=- ./cypress > /tmp/.buildx-cypress/img.tar
 
   e2e:
     runs-on: ubuntu-latest
