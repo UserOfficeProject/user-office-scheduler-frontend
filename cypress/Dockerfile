@@ -9,8 +9,8 @@ COPY tsconfig.json .
 RUN npm ci
 
 COPY . ./cypress
-COPY wait-for-frontend.sh .
+COPY wait-for-frontend.sh /
 
-RUN chmod +x wait-for-frontend.sh
+RUN chmod +x /wait-for-frontend.sh
 
 ENTRYPOINT ["npm", "run", "cy:run"]

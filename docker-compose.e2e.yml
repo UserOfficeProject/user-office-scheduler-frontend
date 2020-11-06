@@ -12,9 +12,8 @@ services:
 
   cypress:
     image: e2e-cypress:latest
-    ipc: host
     entrypoint:
-      ["./wait-for-frontend.sh", "scheduler-frontend:80", "npm run cy:run"]
+      ["/wait-for-frontend.sh", "scheduler-frontend:80", "npm run cy:run"]
     depends_on:
       - scheduler-frontend
     volumes:
