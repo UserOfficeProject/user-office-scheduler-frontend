@@ -52,7 +52,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Cache cypress
+      - name: Load cypress cache
         id: cached-cypress-image
         uses: actions/cache@v2
         with:
@@ -95,7 +95,19 @@ jobs:
 
       - name: Load cached cypress image
         run: |
-          docker load --input /tmp/.buildx-cypress/img.tar
+          # docker load --input /tmp/.buildx-cypress/img.tar
+          docker import \
+            -c "ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+            -c "ENV CHROME_VERSION=85.0.4183.121" \
+            -c "ENV DBUS_SESSION_BUS_ADDRESS=/dev/null" \
+            -c "ENV CI=1" \
+            -c "ENV QT_X11_NO_MITSHM=1" \
+            -c "ENV _X11_NO_MITSHM=1" \
+            -c "ENV _MITSHM=0" \
+            -c "ENV CYPRESS_CACHE_FOLDER=/root/.cache/Cypress" \
+            -c "ENV TERM=xterm" \
+            -c "ENTRYPOINT [\"npm\" \"run\" \"cy:run\"]" \
+            /tmp/.buildx-cypress/img.tar
 
       - name: Load app cache
         id: cached-image
