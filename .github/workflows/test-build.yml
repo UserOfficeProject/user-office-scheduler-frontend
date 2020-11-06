@@ -65,8 +65,7 @@ jobs:
         run: |
           mkdir -p /tmp/.buildx-cypress
 
-          docker build ./cypress --squash -t e2e-cypress:latest
-          docker save e2e-cypress:latest > /tmp/.buildx-cypress/img.tar
+          docker buildx build --squash -t e2e-cypress:latest -o type=docker,dest=- ./cypress > /tmp/.buildx-cypress/img.tar
 
   e2e:
     runs-on: ubuntu-latest
