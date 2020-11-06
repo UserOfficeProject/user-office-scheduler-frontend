@@ -9,8 +9,6 @@ services:
       - GATEWAY_HOST=gateway:4100
     depends_on:
       - gateway
-    entrypoint: ["/docker-entrypoint.sh"]
-    command: ["nginx", "-g", "daemon off;"]
 
   cypress:
     build:

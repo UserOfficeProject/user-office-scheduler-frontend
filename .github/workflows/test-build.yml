@@ -36,7 +36,9 @@ jobs:
         run: |
           mkdir -p /tmp/.buildx-image-cache
 
-          docker buildx build --cache-to="type=local,dest=/tmp/.buildx-layer-cache,mode=max" --cache-from="type=local,src=/tmp/.buildx-layer-cache" -o type=docker,dest=- . > /tmp/.buildx-image-cache/img.tar
+          docker buildx build --cache-to="type=local,dest=/tmp/.buildx-layer-cache,mode=max" --cache-from="type=local,src=/tmp/.buildx-layer-cache" -t duo-scheduler-frontend:${{ github.sha }} -o type=docker,dest=- . > /tmp/.buildx-image-cache/img.tar
+
+          docker images
 
           ls -la /tmp
           ls -la /tmp/.buildx-layer-cache
@@ -68,7 +70,8 @@ jobs:
 
       - name: Import cached image
         run: |
-          docker import /tmp/.buildx-image-cache/img.tar duo-scheduler-frontend:${{ github.sha }}
+          docker load --input /tmp/.buildx-image-cache/img.tar
+          # duo-scheduler-frontend:${{ github.sha }}
 
       - name: Resolve required repositories
         id: resolve_rep
