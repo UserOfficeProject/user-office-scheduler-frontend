@@ -61,7 +61,7 @@ jobs:
           mkdir -p /tmp/.buildx-cypress
           cd ./cypress
 
-          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- ./cypress > /tmp/.buildx-cypress/img.tar
+          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- . > /tmp/.buildx-cypress/img.tar
 
   e2e:
     runs-on: ubuntu-latest
