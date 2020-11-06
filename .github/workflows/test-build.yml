@@ -51,6 +51,7 @@ jobs:
             /tmp/.buildx-layer-cache
             /tmp/.buildx-image-cache
           key: ${{ runner.os }}-buildx-${{ github.head_ref }}
+          restore-keys: ${{ runner.os }}-buildx-
       - name: Build and cache image
         run: |
           mkdir -p /tmp/.buildx-image-cache
