@@ -50,13 +50,14 @@ jobs:
           path: |
             /tmp/.buildx-layer-cache
             /tmp/.buildx-image-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.head_ref }}
       - name: Build
         run: |
           docker buildx build --cache-to="type=local,dest=/tmp/.buildx-layer-cache,mode=max" --cache-from="type=local,src=/tmp/.buildx-layer-cache" --tag built-image:latest .
 
-          docker save built-image:latest -o /tmp/.buildx-image-cache
           ls -la /tmp/.buildx-layer-cache
+
+          docker save built-image:latest -o /tmp/.buildx-image-cache
           ls -la /tmp/.buildx-image-cache
   #     - name: Resolve required repositories
   #       id: resolve_rep
