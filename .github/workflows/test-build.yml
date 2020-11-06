@@ -51,10 +51,11 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
       - name: Build
         run: |
-          docker buildx build . \ 
+          docker buildx build \ 
             --cache-from="type=local,src=/tmp/.buildx-cache" \ 
             --cache-to="type=local,dest=/tmp/.buildx-cache,mode=max" \ 
-            --tag duo-scheduler-frontend:${{ github.sha }}
+            --tag duo-scheduler-frontend:${{ github.sha }} \
+            .
 
       - name: Resolve required repositories
         id: resolve_rep
