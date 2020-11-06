@@ -50,7 +50,7 @@ jobs:
           path: |
             /tmp/.buildx-layer-cache
             /tmp/.buildx-image-cache
-          key: ${{ runner.os }}-buildx-${{ github.head_ref }}-${{ github.head_ref }}
+          key: ${{ runner.os }}-buildx-${{ github.head_ref }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.head_ref }}-
             ${{ runner.os }}-buildx-
