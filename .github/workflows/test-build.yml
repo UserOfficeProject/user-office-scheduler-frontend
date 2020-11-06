@@ -61,15 +61,15 @@ jobs:
           cat > docker-compose.all.yml << EOF
           version: "3.1"
 
-          services:
-            reverse-proxy:
-              image: traefik:1.7 # The official Traefik docker image
-              command: --api --docker # Enables the web UI and tells Traefik to listen to docker
-              ports:
-                - "8080:8080" # The Traefik Web UI (enabled by --api)
-                - "8081:80"
-              volumes:
-                - /var/run/docker.sock:/var/run/docker.sock:ro
+          #services:
+          #  reverse-proxy:
+          #    image: traefik:1.7 # The official Traefik docker image
+          #    command: --api --docker # Enables the web UI and tells Traefik to listen to docker
+          #    ports:
+          #      - "8080:8080" # The Traefik Web UI (enabled by --api)
+          #      - "8081:80"
+          #    volumes:
+          #      - /var/run/docker.sock:/var/run/docker.sock:ro
           EOF
 
       - name: Run docker-compose
@@ -110,6 +110,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -127,3 +133,5 @@ jobs:
           #build-args: REACT_APP_AUTH_REDIRECT=/shared-auth
           push: true
           tags: dmsc/duo-scheduler-frontend:${{ github.head_ref }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
