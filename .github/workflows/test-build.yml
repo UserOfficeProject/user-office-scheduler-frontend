@@ -69,7 +69,7 @@ jobs:
 
           wget https://github.com/jwilder/docker-squash/releases/download/v0.2.0/docker-squash-linux-amd64-v0.2.0.tar.gz
           tar -C ./ -xzvf ./docker-squash-linux-amd64-v0.2.0.tar.gz
-          ./docker-squash -i ./cypress.tar -o /tmp/.buildx-cypress/img.tar
+          sudo ./docker-squash -i ./cypress.tar -o /tmp/.buildx-cypress/img.tar
 
   e2e:
     runs-on: ubuntu-latest
