@@ -220,4 +220,5 @@ jobs:
         with:
           push: true
           tags: dmsc/duo-scheduler-frontend:${{ github.head_ref }}
+          cache-to: type=local,dest=/tmp/.buildx-layer-cache,mode=max
           cache-from: type=local,src=/tmp/.buildx-layer-cache
