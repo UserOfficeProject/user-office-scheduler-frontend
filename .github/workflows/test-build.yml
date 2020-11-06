@@ -107,7 +107,7 @@ jobs:
             -c "ENV CYPRESS_CACHE_FOLDER=/root/.cache/Cypress" \
             -c "ENV TERM=xterm" \
             -c "ENTRYPOINT [\"npm\" \"run\" \"cy:run\"]" \
-            /tmp/.buildx-cypress/img.tar
+            /tmp/.buildx-cypress/img.tar e2e-cypress:latest
 
       - name: Load app cache
         id: cached-image
