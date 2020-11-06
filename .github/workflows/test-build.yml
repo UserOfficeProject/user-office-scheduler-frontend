@@ -22,7 +22,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Cache Docker layers and image
+      - name: Cache app docker layers and image
         id: cached-image
         uses: actions/cache@v2
         with:
@@ -93,7 +93,7 @@ jobs:
           echo "No cache hit!"
           exit 1
 
-      - name: Import cached cypress image
+      - name: Load cached cypress image
         run: |
           docker load --input /tmp/.buildx-cypress/img.tar
 
@@ -112,7 +112,7 @@ jobs:
           echo "No cache hit!"
           exit 1
 
-      - name: Import cached app image
+      - name: Load cached app image
         run: |
           docker load --input /tmp/.buildx-image-cache/img.tar
 
@@ -183,13 +183,7 @@ jobs:
     needs: e2e
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Load cached image
+      - name: Load app cache
         id: cached-image
         uses: actions/cache@v2
         with:
@@ -204,21 +198,21 @@ jobs:
           echo "No cache hit!"
           exit 1
 
+      # For debugging capture the selected branch
+      - name: Branch
+        run: echo "Branch ${{ github.head_ref }}"
+
+      - name: Load cached app image
+        run: |
+          docker load --input /tmp/.buildx-image-cache/img.tar
+
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # For debugging capture the selected branch
-      - name: Branch
-        run: echo "Branch ${{ github.head_ref }}"
-
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          tags: dmsc/duo-scheduler-frontend:${{ github.head_ref }}
-          cache-to: type=local,dest=/tmp/.buildx-layer-cache,mode=max
-          cache-from: type=local,src=/tmp/.buildx-layer-cache
+      - name: Push
+        run: |
+          docker tag duo-scheduler-frontend:${{ github.sha }} dmsc/duo-scheduler-frontend:${{ github.head_ref }}
+          docker push dmsc/duo-scheduler-frontend:${{ github.head_ref }}
