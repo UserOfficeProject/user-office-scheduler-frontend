@@ -51,7 +51,7 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
       - name: Build
         run: |
-          docker buildx build --cache-to="type=local,dest=/tmp/.buildx-cache,mode=max" .
+          docker buildx build --cache-to="type=local,dest=/tmp/.buildx-cache,mode=max" --cache-from="type=local,src=/tmp/.buildx-cache" .
           # docker buildx build \ 
           #   --cache-from="type=local,src=/tmp/.buildx-cache" \ 
           #   --cache-to="type=local,dest=/tmp/.buildx-cache,mode=max" \ 
