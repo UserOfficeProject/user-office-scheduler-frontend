@@ -32,17 +32,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.head_ref }}-
             ${{ runner.os }}-buildx-
+
       - name: Build and cache image
         run: |
           mkdir -p /tmp/.buildx-image-cache
 
           docker buildx build --cache-to="type=local,dest=/tmp/.buildx-layer-cache,mode=max" --cache-from="type=local,src=/tmp/.buildx-layer-cache" -t duo-scheduler-frontend:${{ github.sha }} -o type=docker,dest=- . > /tmp/.buildx-image-cache/img.tar
-
-          docker images
-
-          ls -la /tmp
-          ls -la /tmp/.buildx-layer-cache
-          ls -la /tmp/.buildx-image-cache
 
   e2e:
     runs-on: ubuntu-latest
@@ -53,7 +48,29 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Load cached image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cypress cache
+        id: cached-image
+        uses: actions/cache@v2
+        with:
+          path: |
+            /tmp/.buildx-cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('cypress/Dockerfile') }}
+
+      - name: Build and cache image
+        if: steps.cached-image.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/.buildx-cypress
+
+          docker buildx build -t e2e-cypress:latest -o type=docker,dest=- . > /tmp/.buildx-cypress/img.tar
+
+      - name: Import cached cypress image
+        run: |
+          docker load --input /tmp/.buildx-cypress/img.tar
+
+      - name: App cache
         id: cached-image
         uses: actions/cache@v2
         with:
@@ -68,7 +85,7 @@ jobs:
           echo "No cache hit!"
           exit 1
 
-      - name: Import cached image
+      - name: Import cached app image
         run: |
           docker load --input /tmp/.buildx-image-cache/img.tar
 

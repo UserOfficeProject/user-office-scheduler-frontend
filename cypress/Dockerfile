@@ -1,12 +1,12 @@
 FROM cypress/included:5.3.0
 
-WORKDIR /tmp/cypress
+WORKDIR /e2e
 
 COPY cypress.json .
-COPY package.json .
+COPY package* ./
 COPY tsconfig.json .
 
-RUN npm install --only=production --silent
+RUN npm ci
 
 COPY . ./cypress
 COPY wait-for-frontend.sh .
