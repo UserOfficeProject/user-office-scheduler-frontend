@@ -55,8 +55,7 @@ jobs:
             --cache-from="type=local,src=/tmp/.buildx-cache" \ 
             --cache-to="type=local,dest=/tmp/.buildx-cache,mode=max" \ 
             --tag duo-scheduler-frontend:${{ github.sha }} \
-            --output="type=image,push=false" \
-            .
+            --output="type=image,push=false" .
 
       - name: Resolve required repositories
         id: resolve_rep
