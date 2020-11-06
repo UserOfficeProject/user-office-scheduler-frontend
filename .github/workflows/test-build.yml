@@ -47,13 +47,17 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
-          path: /tmp/.buildx-fe-cache
+          path: |
+            /tmp/.buildx-layer-cache
+            /tmp/.buildx-image-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
       - name: Build
         run: |
-          docker buildx build --cache-to="type=local,dest=/tmp/.buildx-fe-cache,mode=max" --cache-from="type=local,src=/tmp/.buildx-fe-cache" --tag duo-scheduler-frontend:${{ github.sha }} .
+          docker buildx build --cache-to="type=local,dest=/tmp/.buildx-layer-cache,mode=max" --cache-from="type=local,src=/tmp/.buildx-layer-cache" --tag built-image .
 
-          ls -la /tmp/.buildx-fe-cache
+          docker save built-image /tmp/.buildx-image-cache
+          ls -la /tmp/.buildx-layer-cache
+          ls -la /tmp/.buildx-image-cache
   #     - name: Resolve required repositories
   #       id: resolve_rep
   #       run: |
