@@ -71,7 +71,6 @@ jobs:
       - name: Import cached image
         run: |
           docker load --input /tmp/.buildx-image-cache/img.tar
-          # duo-scheduler-frontend:${{ github.sha }}
 
       - name: Resolve required repositories
         id: resolve_rep
@@ -125,42 +124,53 @@ jobs:
           export USER_OFFICE_ENDPOINT=http://backend:4000/graphql
           export BUILD_TAG=${{ github.sha }}
 
-          docker images
-
           docker-compose -f docker-compose.all.yml \
             -f user-office-scheduler-backend/docker-compose.e2e.yml \
             -f user-office-backend/docker-compose.e2e.yml \
             -f user-office-gateway/docker-compose.e2e.yml \
             -f "$REPO_DIR_NAME/docker-compose.e2e.yml" \
             up --exit-code-from cypress
-  # push:
-  #   # The type of runner that the job will run on
-  #   runs-on: ubuntu-latest
-  #   needs: e2e
-  #   # Steps represent a sequence of tasks that will be executed as part of the job
-  #   steps:
-  #     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v1
-  #     - name: Cache Docker layers
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: /tmp/.buildx-cache
-  #         key: ${{ runner.os }}-buildx-${{ github.sha }}
-  #     - name: Login to DockerHub
-  #       uses: docker/login-action@v1
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
-  #     # For debugging capture the selected branch
-  #     - name: Branch
-  #       run: echo "Branch ${{ github.head_ref }}"
-  #     - name: Build and push
-  #       id: docker_build
-  #       uses: docker/build-push-action@v2
-  #       with:
-  #         #build-args: REACT_APP_AUTH_REDIRECT=/shared-auth
-  #         push: true
-  #         tags: dmsc/duo-scheduler-frontend:${{ github.head_ref }}
-  #         cache-from: type=local,src=/tmp/.buildx-cache
+  push:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    needs: e2e
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Load cached image
+        id: cached-image
+        uses: actions/cache@v2
+        with:
+          path: |
+            /tmp/.buildx-layer-cache
+            /tmp/.buildx-image-cache
+          key: ${{ runner.os }}-buildx-${{ github.head_ref }}-${{ github.sha }}
+
+      - name: Fail on cache miss
+        if: steps.cached-image.outputs.cache-hit != 'true'
+        run: |
+          echo "No cache hit!"
+          exit 1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # For debugging capture the selected branch
+      - name: Branch
+        run: echo "Branch ${{ github.head_ref }}"
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: dmsc/duo-scheduler-frontend:${{ github.head_ref }}
+          cache-from: type=local,src=/tmp/.buildx-layer-cache
