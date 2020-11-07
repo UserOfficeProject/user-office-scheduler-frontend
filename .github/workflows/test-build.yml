@@ -52,6 +52,8 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      # For now we have to load the cache to know if we have a cache hit
+      # in the future this can be optimized further by just checking the cache key
       - name: Load cypress cache
         id: cached-cypress-image
         uses: actions/cache@v2
