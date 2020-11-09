@@ -69,6 +69,13 @@ jobs:
 
           docker buildx build -t e2e-cypress:latest -o type=docker,dest=- ./cypress > /tmp/.buildx-cypress/img.tar
 
+      - name: Login to GitHub Packages Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: docker.pkg.github.com
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Test docker pull from github repo
         run: |
           docker pull docker.pkg.github.com/userofficeproject/user-office-scheduler-frontend/e2e-cypress:latest
