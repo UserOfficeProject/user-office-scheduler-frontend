@@ -63,6 +63,8 @@ jobs:
           MANIFEST_STATUS=$(curl -o /dev/null --silent --head --write-out '%{http_code}' $MANIFEST_URL)
           TAG="docker.pkg.github.com/userofficeproject/user-office-scheduler-frontend/e2e-cypress:$DOCKERFILE_VERSION"
 
+          echo MANIFEST_STATUS $MANIFEST_STATUS
+
           if [[ $MANIFEST_STATUS != "200" ]]; then
             docker build -t $TAG ./cypress
             docker push $TAG
