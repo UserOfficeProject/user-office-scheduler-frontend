@@ -60,7 +60,7 @@ jobs:
         run: |
           DOCKERFILE_VERSION=${{ hashFiles('cypress/Dockerfile') }}
           MANIFEST_URL="https://docker.pkg.github.com/v2/userofficeproject/user-office-scheduler-frontend/e2e-cypress/manifests/$DOCKERFILE_VERSION"
-          MANIFEST_STATUS=$(curl -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' -o /dev/null --silent --head --write-out '%{http_code}' $MANIFEST_URL)
+          MANIFEST_STATUS=$(curl -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' -o /dev/null --silent --get --write-out '%{http_code}' $MANIFEST_URL)
           TAG="docker.pkg.github.com/userofficeproject/user-office-scheduler-frontend/e2e-cypress:$DOCKERFILE_VERSION"
 
           echo MANIFEST_STATUS $MANIFEST_STATUS
