@@ -5,7 +5,7 @@ COPY package*.json /app/
 
 RUN npm ci --only=production --silent
 
-COPY ./ /app/
+COPY ./ ./
 
 RUN npm run build
 

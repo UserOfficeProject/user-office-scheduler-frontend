@@ -16,7 +16,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
       - name: Cache app docker layers and image
@@ -77,7 +76,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
       - name: Login to GitHub Packages Docker Registry
@@ -131,6 +129,7 @@ jobs:
           if [[ $(echo $GATEWAY_TAGS_JSON | jq -c '.[] | select(.name=="${{ github.head_ref }}")' | jq -s '. | length') != "0" ]]; then
             GATEWAY_TAG="${{ github.head_ref }}"
           fi
+
           echo ::set-output name=SCHEDULER_BE_TAG::${SCHEDULER_BE_TAG}
           echo ::set-output name=UO_BE_TAG::${UO_BE_TAG}
           echo ::set-output name=GATEWAY_TAG::${GATEWAY_TAG}
@@ -157,15 +156,17 @@ jobs:
 
           export USER_OFFICE_BACKEND_TAG=${{ steps.resolve_rep.outputs.UO_BE_TAG }}
           export USER_OFFICE_BACKEND_DIR=user-office-backend
+          export USER_OFFICE_BACKEND=http://backend:4000/graphql
+          export USER_OFFICE_ENDPOINT=$USER_OFFICE_BACKEND
+
           export USER_OFFICE_SCHEDULER_BACKEND_TAG=${{ steps.resolve_rep.outputs.SCHEDULER_BE_TAG }}
           export USER_OFFICE_SCHEDULER_BACKEND_DIR=user-office-scheduler-backend
-          export USER_OFFICE_GATEWAY_TAG=${{ steps.resolve_rep.outputs.GATEWAY_TAG }}
-          export USER_OFFICE_BACKEND=http://backend:4000/graphql
           export USER_OFFICE_SCHEDULER_BACKEND=http://scheduler-backend:4000/graphql
           export USER_OFFICE_SCHEDULER_FRONTEND_DIR=$REPO_DIR_NAME
-          export RABBITMQ_HOSTNAME=rabbitmq
+
+          export USER_OFFICE_GATEWAY_TAG=${{ steps.resolve_rep.outputs.GATEWAY_TAG }}
+
           export INCLUDE_SEEDS=1
-          export USER_OFFICE_ENDPOINT=http://backend:4000/graphql
           export BUILD_TAG=${{ github.sha }}
 
           docker-compose -f docker-compose.all.yml \

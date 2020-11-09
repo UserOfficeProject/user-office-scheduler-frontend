@@ -7,7 +7,7 @@ COPY package* ./
 COPY tsconfig.json .
 
 # force re-build 2
-RUN npm ci
+RUN npm ci --silent
 
 COPY . ./cypress
 COPY wait-for-frontend.sh /
