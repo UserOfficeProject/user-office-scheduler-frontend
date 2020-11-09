@@ -69,6 +69,15 @@ jobs:
 
           docker buildx build -t e2e-cypress:latest -o type=docker,dest=- ./cypress > /tmp/.buildx-cypress/img.tar
 
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          context: ./cypress
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: UserOfficeProject/user-office-frontend/my-image:e2e-cypress:latest
+
   e2e:
     runs-on: ubuntu-latest
     needs: cypress
