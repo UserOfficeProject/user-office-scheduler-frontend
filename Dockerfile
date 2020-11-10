@@ -3,7 +3,7 @@ FROM node:12-alpine AS build-stage
 WORKDIR /app
 COPY package*.json /app/
 
-RUN npm ci --only=production --silent
+RUN npm ci --loglevel error --no-fund
 
 COPY ./ ./
 
