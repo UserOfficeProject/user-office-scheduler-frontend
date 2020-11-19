@@ -191,8 +191,6 @@ class UserOfficeGraphQLClient extends GraphQLClient {
       })
       .then(({ token: { error, token } }) => {
         if (error) {
-          console.error({ error });
-
           hadError = error;
 
           throw error;
@@ -363,8 +361,6 @@ class AuthorizedGraphQLClient {
   }
 
   getGraphQLClient(token: string) {
-    console.log('called with ', { token: token.substr(-10) });
-
     this.gqClient.setToken(token);
 
     return this.gqClient;
