@@ -55,21 +55,6 @@ export type Answer = {
   value: Maybe<Scalars['IntStringDateBoolArray']>;
 };
 
-export type AnswerBasic = {
-  __typename?: 'AnswerBasic';
-  answerId: Maybe<Scalars['Int']>;
-  answer: Scalars['IntStringDateBoolArray'];
-  questionaryId: Scalars['Int'];
-  questionId: Scalars['String'];
-  createdAt: Scalars['DateTime'];
-};
-
-export type AnswerBasicResponseWrap = {
-  __typename?: 'AnswerBasicResponseWrap';
-  error: Maybe<Scalars['String']>;
-  answer: Maybe<AnswerBasic>;
-};
-
 export type AnswerInput = {
   questionId: Scalars['String'];
   value?: Maybe<Scalars['String']>;
@@ -125,6 +110,8 @@ export type Call = {
   endCall: Scalars['DateTime'];
   startReview: Scalars['DateTime'];
   endReview: Scalars['DateTime'];
+  startSEPReview: Maybe<Scalars['DateTime']>;
+  endSEPReview: Maybe<Scalars['DateTime']>;
   startNotify: Scalars['DateTime'];
   endNotify: Scalars['DateTime'];
   startCycle: Scalars['DateTime'];
@@ -146,6 +133,9 @@ export type CallResponseWrap = {
 export type CallsFilter = {
   templateIds?: Maybe<Array<Scalars['Int']>>;
   isActive?: Maybe<Scalars['Boolean']>;
+  isEnded?: Maybe<Scalars['Boolean']>;
+  isReviewEnded?: Maybe<Scalars['Boolean']>;
+  isSEPReviewEnded?: Maybe<Scalars['Boolean']>;
 };
 
 export type CreateCallInput = {
@@ -154,6 +144,8 @@ export type CreateCallInput = {
   endCall: Scalars['DateTime'];
   startReview: Scalars['DateTime'];
   endReview: Scalars['DateTime'];
+  startSEPReview?: Maybe<Scalars['DateTime']>;
+  endSEPReview?: Maybe<Scalars['DateTime']>;
   startNotify: Scalars['DateTime'];
   endNotify: Scalars['DateTime'];
   startCycle: Scalars['DateTime'];
@@ -187,7 +179,7 @@ export enum DataType {
   FILE_UPLOAD = 'FILE_UPLOAD',
   SELECTION_FROM_OPTIONS = 'SELECTION_FROM_OPTIONS',
   TEXT_INPUT = 'TEXT_INPUT',
-  SUBTEMPLATE = 'SUBTEMPLATE',
+  SAMPLE_DECLARATION = 'SAMPLE_DECLARATION',
   SAMPLE_BASIS = 'SAMPLE_BASIS',
   PROPOSAL_BASIS = 'PROPOSAL_BASIS'
 }
@@ -213,9 +205,6 @@ export type EmailVerificationResponseWrap = {
 
 export type EmbellishmentConfig = {
   __typename?: 'EmbellishmentConfig';
-  small_label: Scalars['String'];
-  required: Scalars['Boolean'];
-  tooltip: Scalars['String'];
   omitFromPdf: Scalars['Boolean'];
   html: Scalars['String'];
   plain: Scalars['String'];
@@ -236,6 +225,7 @@ export enum Event {
   PROPOSAL_CREATED = 'PROPOSAL_CREATED',
   PROPOSAL_UPDATED = 'PROPOSAL_UPDATED',
   PROPOSAL_SUBMITTED = 'PROPOSAL_SUBMITTED',
+  PROPOSAL_FEASIBLE = 'PROPOSAL_FEASIBLE',
   PROPOSAL_SEP_SELECTED = 'PROPOSAL_SEP_SELECTED',
   PROPOSAL_INSTRUMENT_SELECTED = 'PROPOSAL_INSTRUMENT_SELECTED',
   PROPOSAL_FEASIBILITY_REVIEW_SUBMITTED = 'PROPOSAL_FEASIBILITY_REVIEW_SUBMITTED',
@@ -247,6 +237,8 @@ export enum Event {
   PROPOSAL_ACCEPTED = 'PROPOSAL_ACCEPTED',
   PROPOSAL_REJECTED = 'PROPOSAL_REJECTED',
   CALL_ENDED = 'CALL_ENDED',
+  CALL_REVIEW_ENDED = 'CALL_REVIEW_ENDED',
+  CALL_SEP_REVIEW_ENDED = 'CALL_SEP_REVIEW_ENDED',
   USER_CREATED = 'USER_CREATED',
   USER_UPDATED = 'USER_UPDATED',
   USER_ROLE_UPDATED = 'USER_ROLE_UPDATED',
@@ -459,8 +451,6 @@ export type Proposal = {
 
 export type ProposalBasisConfig = {
   __typename?: 'ProposalBasisConfig';
-  small_label: Scalars['String'];
-  required: Scalars['Boolean'];
   tooltip: Scalars['String'];
 };
 
@@ -703,6 +693,8 @@ export type Sample = {
   title: Scalars['String'];
   creatorId: Scalars['Int'];
   questionaryId: Scalars['Int'];
+  proposalId: Scalars['Int'];
+  questionId: Scalars['String'];
   safetyStatus: SampleStatus;
   safetyComment: Scalars['String'];
   created: Scalars['DateTime'];
@@ -711,9 +703,6 @@ export type Sample = {
 
 export type SampleBasisConfig = {
   __typename?: 'SampleBasisConfig';
-  small_label: Scalars['String'];
-  required: Scalars['Boolean'];
-  tooltip: Scalars['String'];
   titlePlaceholder: Scalars['String'];
 };
 
@@ -729,6 +718,8 @@ export type SamplesFilter = {
   questionaryId?: Maybe<Scalars['Int']>;
   sampleIds?: Maybe<Array<Scalars['Int']>>;
   status?: Maybe<SampleStatus>;
+  questionId?: Maybe<Scalars['String']>;
+  proposalId?: Maybe<Scalars['Int']>;
 };
 
 export enum SampleStatus {
@@ -745,6 +736,7 @@ export type SelectionFromOptionsConfig = {
   tooltip: Scalars['String'];
   variant: Scalars['String'];
   options: Array<Scalars['String']>;
+  isMultipleSelect: Scalars['Boolean'];
 };
 
 export type Sep = {
@@ -804,13 +796,12 @@ export type SePsQueryResult = {
 
 export type SubtemplateConfig = {
   __typename?: 'SubtemplateConfig';
-  small_label: Scalars['String'];
-  required: Scalars['Boolean'];
-  tooltip: Scalars['String'];
   maxEntries: Maybe<Scalars['Int']>;
   templateId: Scalars['Int'];
   templateCategory: Scalars['String'];
   addEntryButtonLabel: Scalars['String'];
+  small_label: Scalars['String'];
+  required: Scalars['Boolean'];
 };
 
 export type SuccessResponseWrap = {
@@ -892,6 +883,7 @@ export type TextInputConfig = {
   placeholder: Scalars['String'];
   htmlQuestion: Maybe<Scalars['String']>;
   isHtmlQuestion: Scalars['Boolean'];
+  isCounterHidden: Scalars['Boolean'];
 };
 
 export type TokenResponseWrap = {
@@ -934,6 +926,8 @@ export type UpdateCallInput = {
   endCall: Scalars['DateTime'];
   startReview: Scalars['DateTime'];
   endReview: Scalars['DateTime'];
+  startSEPReview?: Maybe<Scalars['DateTime']>;
+  endSEPReview?: Maybe<Scalars['DateTime']>;
   startNotify: Scalars['DateTime'];
   endNotify: Scalars['DateTime'];
   startCycle: Scalars['DateTime'];
@@ -941,6 +935,9 @@ export type UpdateCallInput = {
   cycleComment: Scalars['String'];
   surveyComment: Scalars['String'];
   proposalWorkflowId?: Maybe<Scalars['Int']>;
+  callEnded?: Maybe<Scalars['Int']>;
+  callReviewEnded?: Maybe<Scalars['Int']>;
+  callSEPReviewEnded?: Maybe<Scalars['Int']>;
   templateId?: Maybe<Scalars['Int']>;
 };
 
@@ -965,7 +962,7 @@ export type UpdateTopicOrderResponseWrap = {
 export type User = {
   __typename?: 'User';
   id: Scalars['Int'];
-  user_title: Maybe<Scalars['String']>;
+  user_title: Scalars['String'];
   firstname: Scalars['String'];
   middlename: Maybe<Scalars['String']>;
   lastname: Scalars['String'];
@@ -1058,7 +1055,6 @@ export type NewScheduledEventInput = {
   bookingType: ScheduledEventBookingType;
   startsAt: Scalars['TzLessDateTime'];
   endsAt: Scalars['TzLessDateTime'];
-  scheduledById: Scalars['ID'];
   description?: Maybe<Scalars['String']>;
   instrumentId: Scalars['ID'];
 };
@@ -1183,7 +1179,6 @@ export type Query = {
   review: Maybe<Review>;
   roles: Maybe<Array<Role>>;
   sample: Maybe<Sample>;
-  samplesByAnswerId: Maybe<Array<Sample>>;
   samplesByCallId: Maybe<Array<Sample>>;
   samples: Maybe<Array<Sample>>;
   sep: Maybe<Sep>;
@@ -1191,6 +1186,8 @@ export type Query = {
   sepProposals: Maybe<Array<SepProposal>>;
   sepProposalsByInstrument: Maybe<Array<SepProposal>>;
   seps: Maybe<SePsQueryResult>;
+  version: Scalars['String'];
+  factoryVersion: Scalars['String'];
   templateCategories: Maybe<Array<TemplateCategory>>;
   template: Maybe<Template>;
   checkToken: TokenResult;
@@ -1205,6 +1202,7 @@ export type Query = {
   proposalBooking: Maybe<ProposalBooking>;
   healthCheck: HealthStats;
   schedulerConfig: SchedulerConfig;
+  schedulerVersion: Scalars['String'];
 };
 
 
@@ -1350,11 +1348,6 @@ export type QuerySampleArgs = {
 };
 
 
-export type QuerySamplesByAnswerIdArgs = {
-  answerId: Scalars['Int'];
-};
-
-
 export type QuerySamplesByCallIdArgs = {
   callId: Scalars['Int'];
 };
@@ -1482,7 +1475,6 @@ export type Mutation = {
   addTechnicalReview: TechnicalReviewResponseWrap;
   addUserForReview: ReviewResponseWrap;
   createSample: SampleResponseWrap;
-  updateSampleStatus: SampleResponseWrap;
   assignChairOrSecretary: SepResponseWrap;
   assignMembers: SepResponseWrap;
   removeMember: SepResponseWrap;
@@ -1511,7 +1503,6 @@ export type Mutation = {
   assignQuestionsToTopic: AssignQuestionsToTopicResponseWrap;
   cloneSample: SampleResponseWrap;
   cloneTemplate: TemplateResponseWrap;
-  createAnswerQuestionaryRelations: AnswerBasicResponseWrap;
   createProposal: ProposalResponseWrap;
   deleteInstitution: InstitutionResponseWrap;
   deleteInstrument: InstrumentResponseWrap;
@@ -1536,8 +1527,7 @@ export type Mutation = {
   token: TokenResponseWrap;
   selectRole: TokenResponseWrap;
   updatePassword: BasicUserDetailsResponseWrap;
-  updateSampleSafetyReview: SampleResponseWrap;
-  updateSampleTitle: SampleResponseWrap;
+  updateSample: SampleResponseWrap;
   updateTopicOrder: UpdateTopicOrderResponseWrap;
   bulkUpsertLostTimes: LostTimesResponseWrap;
   createScheduledEvent: ScheduledEventResponseWrap;
@@ -1739,12 +1729,8 @@ export type MutationAddUserForReviewArgs = {
 export type MutationCreateSampleArgs = {
   title: Scalars['String'];
   templateId: Scalars['Int'];
-};
-
-
-export type MutationUpdateSampleStatusArgs = {
-  sampleId: Scalars['Int'];
-  status: SampleStatus;
+  proposalId: Scalars['Int'];
+  questionId: Scalars['String'];
 };
 
 
@@ -1964,12 +1950,6 @@ export type MutationCloneTemplateArgs = {
 };
 
 
-export type MutationCreateAnswerQuestionaryRelationsArgs = {
-  answerId: Scalars['Int'];
-  questionaryIds: Array<Scalars['Int']>;
-};
-
-
 export type MutationCreateProposalArgs = {
   callId: Scalars['Int'];
 };
@@ -2090,16 +2070,11 @@ export type MutationUpdatePasswordArgs = {
 };
 
 
-export type MutationUpdateSampleSafetyReviewArgs = {
-  id: Scalars['Int'];
-  safetyStatus: SampleStatus;
-  safetyComment: Scalars['String'];
-};
-
-
-export type MutationUpdateSampleTitleArgs = {
+export type MutationUpdateSampleArgs = {
   sampleId: Scalars['Int'];
-  title: Scalars['String'];
+  title?: Maybe<Scalars['String']>;
+  safetyComment?: Maybe<Scalars['String']>;
+  safetyStatus?: Maybe<SampleStatus>;
 };
 
 
