@@ -124,6 +124,9 @@ jobs:
               local json=$(curl -s $endpoint)
               local branch_found=$(echo $json | jq -c ".[] | select(.name==\"$branch\") | .name")
 
+              # to track what we found
+              echo "$endpoint -> $branch_found" &> /dev/stderr
+
               if [[ $branch_found != "" ]]; then
                 found=$((found += 1))
               fi
