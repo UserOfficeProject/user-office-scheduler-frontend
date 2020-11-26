@@ -23,14 +23,16 @@ Cypress.Commands.add('configureClock', () => {
 });
 
 Cypress.Commands.add('configureSession', token => {
-  cy.clearCookies();
-
-  cy.fixture('tokens').then(tokens => {
-    cy.setCookie('token', tokens[token], {
-      path: '/',
-      secure: false,
-    });
-  });
+  /**
+   * For testing disable login which should make the tests fail
+   */
+  // cy.clearCookies();
+  // cy.fixture('tokens').then(tokens => {
+  //   cy.setCookie('token', tokens[token], {
+  //     path: '/',
+  //     secure: false,
+  //   });
+  // });
 });
 //
 //
