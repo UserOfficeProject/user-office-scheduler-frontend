@@ -15,8 +15,8 @@ export type EquipmentTableRow = {
 };
 
 const defaultHeadCells: HeadCell<EquipmentTableRow>[] = [
-  { id: 'id', numeric: false, disablePadding: false, label: 'Actions' },
-  { id: 'name', numeric: false, disablePadding: false, label: 'Name' },
+  { id: 'id', label: 'Actions' },
+  { id: 'name', label: 'Name' },
 ];
 
 export default function Equipments() {
@@ -28,7 +28,6 @@ export default function Equipments() {
         <Grid item xs={12}>
           <StyledPaper margin={[0, 1]}>
             <Table
-              disableSelect
               tableTitle="Equipments"
               headCells={defaultHeadCells}
               rows={equipments}

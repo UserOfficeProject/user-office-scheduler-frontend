@@ -203,6 +203,7 @@ export default function FinalizeStep({
 
       <DialogContent>
         <TimeTable
+          selectable
           editable
           maxHeight={380}
           rows={rows}

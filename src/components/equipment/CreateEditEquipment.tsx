@@ -224,6 +224,7 @@ export default function CreateEditEquipment() {
                     <Field
                       component={CheckboxWithLabel}
                       name="autoAccept"
+                      type="checkbox"
                       Label={{
                         label: 'Auto accept equipment requests',
                         margin: 'normal',

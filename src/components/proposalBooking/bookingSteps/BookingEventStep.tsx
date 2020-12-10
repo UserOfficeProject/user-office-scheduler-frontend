@@ -311,6 +311,7 @@ export default function BookingEventStep({
 
       <DialogContent>
         <TimeTable
+          selectable
           editable
           maxHeight={380}
           rows={rows}

@@ -185,7 +185,6 @@ export default function ViewEquipment() {
               <TimeTable
                 rows={rows}
                 titleComponent="Scheduled events assigned to the equipment"
-                disableSelect
                 showEmptyRows
               />
             )}

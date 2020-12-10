@@ -18,6 +18,7 @@ import {
   Tooltip,
   Typography,
   LabelDisplayedRowsArgs,
+  Padding,
 } from '@material-ui/core';
 import clsx from 'clsx';
 import React, { useState, useEffect } from 'react';
@@ -85,10 +86,10 @@ function stableSort<T>(array: T[], comparator: (a: T, b: T) => number) {
 }
 
 export interface HeadCell<T> {
-  disablePadding: boolean;
   id: keyof T;
   label: string;
-  numeric: boolean;
+  padding?: Padding;
+  numeric?: boolean;
 }
 
 interface EnhancedTableProps<T> {
@@ -98,7 +99,8 @@ interface EnhancedTableProps<T> {
   order: Order;
   orderBy: keyof T | null;
   rowCount: number;
-  disableSelect?: boolean;
+  hasActions: boolean;
+  selectable?: boolean;
   onRequestSort: (event: React.MouseEvent<unknown>, property: keyof T) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -111,7 +113,8 @@ function EnhancedTableHead<T>(props: EnhancedTableProps<T>) {
     orderBy,
     numSelected,
     rowCount,
-    disableSelect,
+    hasActions,
+    selectable,
     onRequestSort,
     onSelectAllClick,
   } = props;
@@ -121,10 +124,22 @@ function EnhancedTableHead<T>(props: EnhancedTableProps<T>) {
     onRequestSort(event, property);
   };
 
+  const columns: HeadCell<T>[] = hasActions
+    ? [
+        {
+          id: 'id' as any,
+          numeric: false,
+          label: 'Actions',
+          padding: 'default',
+        },
+        ...headCells,
+      ]
+    : headCells;
+
   return (
     <TableHead>
       <TableRow>
-        {!disableSelect && (
+        {selectable && (
           <TableCell padding="checkbox">
             <Checkbox
               indeterminate={numSelected > 0 && numSelected < rowCount}
@@ -134,11 +149,11 @@ function EnhancedTableHead<T>(props: EnhancedTableProps<T>) {
             />
           </TableCell>
         )}
-        {headCells.map(headCell => (
+        {columns.map(headCell => (
           <TableCell
             key={`${headCell.id}`}
             align={headCell.numeric ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'default'}
+            padding={headCell.padding ? headCell.padding : 'default'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
             <TableSortLabel
@@ -184,18 +199,22 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
   })
 );
 
-type SelectAction = {
+export type TooltipAction = {
   tooltip: string;
   icon: JSX.Element;
   onClick: (rowIds: string[]) => void;
   clearSelect?: boolean;
 };
 
+type RowActions<T> = {
+  component: React.FC<{ row: T }>;
+};
+
 interface EnhancedTableToolbarProps {
   numSelected: number;
   title: string | JSX.Element;
   tooltipActions?: Array<
-    Omit<SelectAction, 'onClick'> & { onClick: () => void }
+    Omit<TooltipAction, 'onClick'> & { onClick: () => void }
   >;
 }
 
@@ -254,8 +273,9 @@ export type TableProps<T extends object> = {
   rowsPerPageOptions?: Array<number | { value: number; label: string }>;
   showEmptyRows?: boolean;
   tableContainerMaxHeight?: number;
-  disableSelect?: boolean;
-  tooltipActions?: SelectAction[];
+  selectable?: boolean;
+  tooltipActions?: TooltipAction[];
+  rowActions?: RowActions<T>[];
   renderRow: (row: T) => JSX.Element;
   extractKey: (obj: T) => string;
   onDelete?: (ids: string[]) => void;
@@ -279,8 +299,9 @@ export default function Table<T extends { [k: string]: any }>({
   defaultOrderBy,
   showEmptyRows,
   tableContainerMaxHeight,
-  disableSelect,
+  selectable,
   tooltipActions,
+  rowActions,
   renderRow,
   extractKey,
   onPageChange,
@@ -293,8 +314,6 @@ export default function Table<T extends { [k: string]: any }>({
   const [selected, setSelected] = useState<string[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
-
-  console.log({ orderBy });
 
   useEffect(() => {
     onPageChange?.(page);
@@ -399,7 +418,8 @@ export default function Table<T extends { [k: string]: any }>({
             orderBy={orderBy}
             onSelectAllClick={handleSelectAllClick}
             onRequestSort={handleRequestSort}
-            disableSelect={disableSelect}
+            selectable={selectable}
+            hasActions={rowActions ? rowActions.length > 0 : false}
             rowCount={rows.length}
           />
           <TableBody>
@@ -426,13 +446,25 @@ export default function Table<T extends { [k: string]: any }>({
                   tabIndex={-1}
                   selected={isItemSelected}
                 >
-                  {!disableSelect && (
+                  {selectable && (
                     <TableCell padding="checkbox">
                       <Checkbox
                         checked={isItemSelected}
                         onClick={event => handleClick(event, extractKey(row))}
                         inputProps={{ 'data-cy': labelId } as any}
                       />
+                    </TableCell>
+                  )}
+
+                  {rowActions && rowActions.length > 0 && (
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      padding={selectable ? 'none' : 'checkbox'}
+                    >
+                      {rowActions.map(({ component: Component }) => (
+                        <Component row={row} key={row.id} />
+                      ))}
                     </TableCell>
                   )}
                   {renderRow(row)}

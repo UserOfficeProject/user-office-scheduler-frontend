@@ -166,11 +166,9 @@ export type EquipmentTableRow = {
 };
 
 const defaultHeadCells: HeadCell<EquipmentTableRow>[] = [
-  { id: 'name', numeric: false, disablePadding: false, label: 'Name' },
+  { id: 'name', label: 'Name' },
   {
     id: 'autoAccept',
-    numeric: false,
-    disablePadding: false,
     label: 'Auto accept',
   },
 ];
@@ -223,9 +221,11 @@ function SelectEquipmentDialog({
       {loading && <Loader />}
       <DialogContent>
         <Table
+          selectable
           defaultOrderBy="name"
           tableTitle="Equipments"
           headCells={defaultHeadCells}
+          tableContainerMaxHeight={600}
           showEmptyRows
           tooltipActions={selectActions}
           rows={equipments}
@@ -289,6 +289,19 @@ function SelectTimeSlotsDialog({
     }
   };
 
+  const AssignEquipment = ({ row }: { row: TimeTableRow }) => {
+    return (
+      <IconButton
+        data-cy="btn-time-table-edit-row"
+        onClick={() => setSelectedScheduledEvent(row)}
+      >
+        <AddIcon />
+      </IconButton>
+    );
+  };
+
+  const rowActions = [{ component: AssignEquipment }];
+
   return (
     <Dialog open={isDialogOpen} maxWidth="md" fullWidth>
       {loading && <Loader />}
@@ -302,32 +315,17 @@ function SelectTimeSlotsDialog({
       )}
       <DialogContent>
         <Table
-          disableSelect
-          defaultOrderBy="id"
+          tableContainerMaxHeight={600}
+          defaultOrderBy="startsAt"
           tableTitle="Time Slots"
-          headCells={[
-            {
-              id: 'id',
-              numeric: false,
-              disablePadding: false,
-              label: 'Actions',
-            },
-            ...timeTableHeadCells,
-          ]}
+          headCells={timeTableHeadCells}
+          rowActions={rowActions}
           showEmptyRows
           rows={rows}
           extractKey={el => el.id}
           renderRow={row => {
             return (
               <>
-                <TableCell component="th" scope="row" padding="checkbox">
-                  <IconButton
-                    data-cy="btn-time-table-edit-row"
-                    onClick={() => setSelectedScheduledEvent(row)}
-                  >
-                    <AddIcon />
-                  </IconButton>
-                </TableCell>
                 <TableCell align="left">
                   {toTzLessDateTime(row.startsAt)}
                 </TableCell>
