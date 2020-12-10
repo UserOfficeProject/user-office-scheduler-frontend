@@ -13,10 +13,10 @@ import {
   makeStyles,
 } from '@material-ui/core';
 import {
-  Comment,
-  CalendarToday,
-  HourglassEmpty,
-  Description,
+  Comment as CommentIcon,
+  CalendarToday as CalendarTodayIcon,
+  HourglassEmpty as HourglassEmptyIcon,
+  Description as DescriptionIcon,
   Add as AddIcon,
 } from '@material-ui/icons';
 import clsx from 'clsx';
@@ -158,8 +158,8 @@ export default function BookingEventStep({
       } = await api().bulkUpsertScheduledEvents({
         input: {
           proposalBookingId: proposalBooking.id,
-          scheduledEvents: rows.map(({ id, startsAt, endsAt }) => ({
-            id,
+          scheduledEvents: rows.map(({ startsAt, endsAt, ...rest }) => ({
+            ...rest,
             startsAt: toTzLessDateTime(startsAt),
             endsAt: toTzLessDateTime(endsAt),
           })),
@@ -229,7 +229,7 @@ export default function BookingEventStep({
               <ListItem disableGutters>
                 <ListItemAvatar>
                   <Avatar>
-                    <Comment />
+                    <CommentIcon />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText
@@ -245,7 +245,7 @@ export default function BookingEventStep({
               <ListItem disableGutters>
                 <ListItemAvatar>
                   <Avatar>
-                    <CalendarToday />
+                    <CalendarTodayIcon />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText
@@ -264,7 +264,7 @@ export default function BookingEventStep({
               <ListItem disableGutters>
                 <ListItemAvatar>
                   <Avatar>
-                    <Description />
+                    <DescriptionIcon />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary="Proposal title" secondary={title} />
@@ -277,7 +277,7 @@ export default function BookingEventStep({
               <ListItem disableGutters>
                 <ListItemAvatar>
                   <Avatar>
-                    <HourglassEmpty />
+                    <HourglassEmptyIcon />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText

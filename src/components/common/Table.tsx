@@ -17,6 +17,7 @@ import {
   Toolbar,
   Tooltip,
   Typography,
+  LabelDisplayedRowsArgs,
 } from '@material-ui/core';
 import { Delete as DeleteIcon } from '@material-ui/icons';
 import clsx from 'clsx';
@@ -233,7 +234,7 @@ const EnhancedTableToolbar = ({
   );
 };
 
-type TableProps<T extends object> = {
+export type TableProps<T extends object> = {
   headCells: HeadCell<T>[];
   rows: T[];
   tableTitle: string | JSX.Element;
@@ -242,6 +243,7 @@ type TableProps<T extends object> = {
   showEmptyRows?: boolean;
   tableContainerMaxHeight?: number;
   disableSelect?: boolean;
+  disableDefaultSort?: boolean;
   renderRow: (row: T) => JSX.Element;
   extractKey: (obj: T) => string;
   onDelete?: (ids: string[]) => void;
@@ -249,6 +251,14 @@ type TableProps<T extends object> = {
 };
 
 const defaultRowsPerPageOptions = [5, 10, 25, { value: -1, label: 'All' }];
+
+const labelDisplayedRows = ({ from, to, count }: LabelDisplayedRowsArgs) => {
+  // 1-5 of 11
+  const range = to === -1 ? 'All ' : `${from}-${to}`;
+  const of = count !== -1 ? count : `more than ${to}`;
+
+  return `${range} of ${of}`;
+};
 
 export default function Table<T extends { [k: string]: any }>({
   headCells,
@@ -258,6 +268,7 @@ export default function Table<T extends { [k: string]: any }>({
   showEmptyRows,
   tableContainerMaxHeight,
   disableSelect,
+  disableDefaultSort,
   renderRow,
   extractKey,
   onDelete,
@@ -374,7 +385,11 @@ export default function Table<T extends { [k: string]: any }>({
                 </TableCell>
               </TableRow>
             )}
-            {stableSort(rows, getComparator(order, orderBy))
+            {(disableDefaultSort
+              ? rows
+              : stableSort(rows, getComparator(order, orderBy))
+            )
+              // fix cut off on `All` selected
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row, index) => {
                 const isItemSelected = isSelected(extractKey(row));
@@ -412,6 +427,7 @@ export default function Table<T extends { [k: string]: any }>({
       </TableContainer>
       <TablePagination
         rowsPerPageOptions={defaultRowsPerPageOptions}
+        labelDisplayedRows={labelDisplayedRows}
         component="div"
         count={rows.length}
         rowsPerPage={rowsPerPage}

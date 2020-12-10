@@ -105,8 +105,8 @@ export default function FinalizeStep({
       } = await api().bulkUpsertLostTimes({
         input: {
           proposalBookingId: proposalBooking.id,
-          lostTimes: rows.map(({ id, startsAt, endsAt }) => ({
-            id,
+          lostTimes: rows.map(({ startsAt, endsAt, ...rest }) => ({
+            ...rest,
             startsAt: toTzLessDateTime(startsAt),
             endsAt: toTzLessDateTime(endsAt),
           })),

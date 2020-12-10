@@ -1,0 +1,7 @@
+query getEquipmentScheduledEvents($equipmentId: ID!) {
+  equipmentScheduledEvents(equipmentId: $equipmentId) {
+    id
+    startsAt
+    endsAt
+  }
+}

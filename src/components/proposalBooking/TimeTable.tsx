@@ -18,7 +18,7 @@ import React, {
   useCallback,
 } from 'react';
 
-import Table, { HeadCell } from 'components/common/Table';
+import Table, { HeadCell, TableProps } from 'components/common/Table';
 import { AppContext } from 'context/AppContext';
 import {
   toTzLessDateTime,
@@ -29,9 +29,10 @@ export type TimeTableRow = {
   id: string;
   startsAt: Moment;
   endsAt: Moment;
+  newlyCreated?: boolean;
 };
 
-const defaultHeadCells: HeadCell<TimeTableRow>[] = [
+export const defaultHeadCells: HeadCell<TimeTableRow>[] = [
   { id: 'startsAt', numeric: false, disablePadding: false, label: 'Starts at' },
   { id: 'endsAt', numeric: false, disablePadding: false, label: 'Ends at' },
 ];
@@ -128,14 +129,14 @@ function InlineTimeEdit({
   );
 }
 
-type TimeTableProps<T> = {
+type TimeTableProps<T extends object> = {
   rows: T[];
   titleComponent: string | JSX.Element;
   editable?: boolean;
   maxHeight?: number;
   disableSelect?: boolean;
   handleRowsChange?: (cb: React.SetStateAction<TimeTableRow[]>) => void;
-};
+} & Partial<TableProps<T>>;
 
 export default function TimeTable<T extends TimeTableRow>({
   rows,
@@ -144,6 +145,7 @@ export default function TimeTable<T extends TimeTableRow>({
   maxHeight,
   disableSelect,
   handleRowsChange,
+  ...props
 }: TimeTableProps<T>) {
   const [editing, setEditing] = useState<string | false>(false);
 
@@ -235,6 +237,7 @@ export default function TimeTable<T extends TimeTableRow>({
           </>
         );
       }}
+      {...props}
     />
   );
 }
