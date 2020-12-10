@@ -4,6 +4,7 @@ import {
   Check as CheckIcon,
   Clear as ClearIcon,
   Edit as EditIcon,
+  Delete as DeleteIcon,
 } from '@material-ui/icons';
 import {
   MuiPickersUtilsProvider,
@@ -196,13 +197,23 @@ export default function TimeTable<T extends TimeTableRow>({
     return copy;
   }, [disableSelect]);
 
+  const selectActions = [
+    {
+      tooltip: 'Delete',
+      icon: <DeleteIcon data-cy="btn-delete" />,
+      onClick: handleDelete,
+      clearSelect: true,
+    },
+  ];
+
   return (
     <Table
       disableSelect={disableSelect}
       tableContainerMaxHeight={maxHeight}
-      defaultOrderBy="id"
+      defaultOrderBy="startsAt"
       tableTitle={titleComponent}
       headCells={headCells}
+      tooltipActions={selectActions}
       rows={rows}
       extractKey={el => el.id}
       onDelete={handleDelete}

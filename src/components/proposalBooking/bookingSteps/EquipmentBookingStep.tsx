@@ -14,39 +14,32 @@ import {
   TableContainer,
   Paper,
   Dialog,
-  DialogTitle,
   Table as MuiTable,
 } from '@material-ui/core';
 import {
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
-  Visibility as VisibilityIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
+  DoneAll as DoneAllIcon,
 } from '@material-ui/icons';
 import { useSnackbar } from 'notistack';
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, generatePath } from 'react-router-dom';
 
 import Loader from 'components/common/Loader';
 import Table, { HeadCell } from 'components/common/Table';
-import { PATH_VIEW_EQUIPMENT } from 'components/paths';
 import { AppContext } from 'context/AppContext';
-import { EquipmentAssignmentStatus } from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
 import useAvailableEquipments from 'hooks/equipment/useAvailableEquipments';
-import useEquipments from 'hooks/equipment/useEquipments';
 import { DetailedProposalBooking } from 'hooks/proposalBooking/useProposalBooking';
 import useProposalBookingScheduledEvents from 'hooks/scheduledEvent/useProposalBookingScheduledEvents';
-import useScheduledEvents from 'hooks/scheduledEvent/useScheduledEvents';
 import useScheduledEventsWithEquipments, {
   ScheduledEventWithEquipments,
   ScheduledEventEquipment,
 } from 'hooks/scheduledEvent/useScheduledEventsWithEquipments';
-import useScheduledEventWithEquipments from 'hooks/scheduledEvent/useScheduledEventWithEquipment';
 import { parseTzLessDateTime, toTzLessDateTime } from 'utils/date';
 
-import TimeTable, {
+import {
   TimeTableRow,
   defaultHeadCells as timeTableHeadCells,
 } from '../TimeTable';
@@ -217,17 +210,24 @@ function SelectEquipmentDialog({
     success && closeDialog(true);
   };
 
+  const selectActions = [
+    {
+      tooltip: 'Assign equipment',
+      icon: <DoneAllIcon data-cy="table-select-btn-add" />,
+      onClick: handleAssign,
+    },
+  ];
+
   return (
     <Dialog open={isDialogOpen} maxWidth="md" fullWidth>
       {loading && <Loader />}
       <DialogContent>
         <Table
-          disableDefaultSort
-          defaultOrderBy="id"
+          defaultOrderBy="name"
           tableTitle="Equipments"
           headCells={defaultHeadCells}
           showEmptyRows
-          onDelete={handleAssign}
+          tooltipActions={selectActions}
           rows={equipments}
           extractKey={el => el.id}
           renderRow={row => {
@@ -320,7 +320,7 @@ function SelectTimeSlotsDialog({
           renderRow={row => {
             return (
               <>
-                <TableCell component="th" scope="row" padding="none">
+                <TableCell component="th" scope="row" padding="checkbox">
                   <IconButton
                     data-cy="btn-time-table-edit-row"
                     onClick={() => setSelectedScheduledEvent(row)}

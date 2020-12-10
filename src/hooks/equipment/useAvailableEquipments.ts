@@ -35,7 +35,7 @@ export default function useAvailableEquipments(scheduledEventId: string) {
     return () => {
       unmount = true;
     };
-  }, [, api]);
+  }, [scheduledEventId, api]);
 
   return { loading, equipments } as const;
 }

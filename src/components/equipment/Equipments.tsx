@@ -29,8 +29,6 @@ export default function Equipments() {
           <StyledPaper margin={[0, 1]}>
             <Table
               disableSelect
-              disableDefaultSort
-              defaultOrderBy="id"
               tableTitle="Equipments"
               headCells={defaultHeadCells}
               rows={equipments}
