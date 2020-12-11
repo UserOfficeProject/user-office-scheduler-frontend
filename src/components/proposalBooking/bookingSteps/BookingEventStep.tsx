@@ -18,6 +18,7 @@ import {
   HourglassEmpty as HourglassEmptyIcon,
   Description as DescriptionIcon,
   Add as AddIcon,
+  Save as SaveIcon,
 } from '@material-ui/icons';
 import clsx from 'clsx';
 import humanizeDuration from 'humanize-duration';
@@ -338,6 +339,7 @@ export default function BookingEventStep({
         <Button
           variant="contained"
           color="primary"
+          startIcon={<SaveIcon />}
           onClick={handleSaveDraft}
           data-cy="btn-save"
         >

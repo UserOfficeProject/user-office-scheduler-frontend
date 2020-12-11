@@ -438,13 +438,17 @@ export default function Table<T extends { [k: string]: any }>({
                 <TableRow
                   key={extractKey(row)}
                   hover
-                  role="checkbox"
-                  aria-checked={isItemSelected}
+                  role="row"
                   tabIndex={-1}
                   selected={isItemSelected}
                 >
                   {selectable && (
-                    <TableCell padding="checkbox">
+                    <TableCell
+                      padding="checkbox"
+                      role="checkbox"
+                      scope="row"
+                      aria-checked={isItemSelected}
+                    >
                       <Checkbox
                         checked={isItemSelected}
                         onClick={event => handleClick(event, extractKey(row))}

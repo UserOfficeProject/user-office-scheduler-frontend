@@ -6,7 +6,7 @@ import {
   FormControlLabel,
   makeStyles,
 } from '@material-ui/core';
-import { Add as AddIcon } from '@material-ui/icons';
+import { Add as AddIcon, Save as SaveIcon } from '@material-ui/icons';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import moment from 'moment';
 import { useSnackbar } from 'notistack';
@@ -228,6 +228,7 @@ export default function FinalizeStep({
           <Button
             variant="contained"
             color="primary"
+            startIcon={<SaveIcon />}
             onClick={handleSave}
             data-cy="btn-save"
           >

@@ -116,7 +116,7 @@ export default function ViewEquipment() {
           <StyledPaper margin={[0, 1]}>
             <Box display="flex" justifyContent="flex-end">
               <Link to={generatePath(PATH_EDIT_EQUIPMENT, { id })}>
-                <IconButton>
+                <IconButton data-cy="btn-edit-equipment">
                   <EditIcon />
                 </IconButton>
               </Link>
@@ -173,6 +173,7 @@ export default function ViewEquipment() {
                     <ListItemText
                       primary="Auto accept equipment requests"
                       secondary={equipment.autoAccept ? 'Yes' : 'No'}
+                      data-cy="autoAccept"
                     />
                   </ListItem>
                 </List>

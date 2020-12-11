@@ -17,6 +17,7 @@ import {
   CircularProgress,
   Box,
 } from '@material-ui/core';
+import { Save as SaveIcon } from '@material-ui/icons';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { Formik, Form, Field } from 'formik';
 import { TextField, CheckboxWithLabel } from 'formik-material-ui';
@@ -61,8 +62,13 @@ export const equipmentValidationSchema = Yup.object().shape({
 
       const min = moment(maintenanceStartsAt).add(1, 'minute');
 
+      if (!min.isValid()) {
+        return;
+      }
+
       return Yup.date()
         .nullable()
+        .typeError(TYPE_ERR_INVALID_DATE)
         .min(
           min.toDate(),
           atOrLaterThanMsg(min.format(TZ_LESS_DATE_TIME_FORMAT))
@@ -245,68 +251,75 @@ export default function CreateEditEquipment() {
                           />
                         }
                         label="Under maintenance"
+                        data-cy="underMaintenance"
                       />
                     </FormGroup>
 
                     {underMaintenance && (
-                      <div>
-                        <FormControl
-                          component="fieldset"
-                          margin="normal"
-                          disabled={isSubmitting}
-                        >
-                          <FormLabel component="legend">
-                            Maintenance time
-                          </FormLabel>
-                          <RadioGroup
-                            aria-label="gender"
-                            name="gender1"
-                            value={indefiniteMaintenance}
-                            onChange={(_, newValue) => {
-                              setIndefiniteMaintenance(newValue);
-                            }}
+                      <>
+                        <FormGroup row>
+                          <FormControl
+                            component="fieldset"
+                            margin="normal"
+                            disabled={isSubmitting}
                           >
-                            <FormControlLabel
-                              value="1"
-                              control={<Radio />}
-                              label="Indefinite"
-                            />
-                            <FormControlLabel
-                              value="0"
-                              control={<Radio />}
-                              label="Defined"
-                            />
-                          </RadioGroup>
-                        </FormControl>
-                        {indefiniteMaintenance === '0' && (
-                          <FormControl component="fieldset">
-                            <MuiPickersUtilsProvider utils={MomentUtils}>
-                              <Field
-                                component={KeyboardDateTimePicker}
-                                name="maintenanceStartsAt"
-                                margin="normal"
-                                label="Starts at"
-                                format={TZ_LESS_DATE_TIME_LOW_PREC_FORMAT}
-                                ampm={false}
-                                minutesStep={60}
-                                fullWidth
-                                data-cy="maintenanceStartsAt"
+                            <FormLabel component="legend">
+                              Maintenance time
+                            </FormLabel>
+                            <RadioGroup
+                              aria-label="maintenance time"
+                              name="maintenanceTime"
+                              value={indefiniteMaintenance}
+                              onChange={(_, newValue) => {
+                                setIndefiniteMaintenance(newValue);
+                              }}
+                            >
+                              <FormControlLabel
+                                value="1"
+                                control={<Radio />}
+                                label="Indefinite"
+                                data-cy="maintenanceTime-indefinite"
                               />
-                              <Field
-                                component={KeyboardDateTimePicker}
-                                name="maintenanceEndsAt"
-                                margin="normal"
-                                label="Ends at"
-                                format={TZ_LESS_DATE_TIME_LOW_PREC_FORMAT}
-                                ampm={false}
-                                minutesStep={60}
-                                fullWidth
-                                data-cy="maintenanceEndsAt"
+                              <FormControlLabel
+                                value="0"
+                                control={<Radio />}
+                                label="Defined"
+                                data-cy="maintenanceTime-defined"
                               />
-                            </MuiPickersUtilsProvider>
+                            </RadioGroup>
                           </FormControl>
+                        </FormGroup>
+                        {indefiniteMaintenance === '0' && (
+                          <FormGroup row>
+                            <FormControl margin="normal">
+                              <MuiPickersUtilsProvider utils={MomentUtils}>
+                                <Field
+                                  component={KeyboardDateTimePicker}
+                                  name="maintenanceStartsAt"
+                                  margin="normal"
+                                  label="Starts at"
+                                  format={TZ_LESS_DATE_TIME_LOW_PREC_FORMAT}
+                                  ampm={false}
+                                  minutesStep={60}
+                                  fullWidth
+                                  data-cy="maintenanceStartsAt"
+                                />
+                                <Field
+                                  component={KeyboardDateTimePicker}
+                                  name="maintenanceEndsAt"
+                                  margin="normal"
+                                  label="Ends at"
+                                  format={TZ_LESS_DATE_TIME_LOW_PREC_FORMAT}
+                                  ampm={false}
+                                  minutesStep={60}
+                                  fullWidth
+                                  data-cy="maintenanceEndsAt"
+                                />
+                              </MuiPickersUtilsProvider>
+                            </FormControl>
+                          </FormGroup>
                         )}
-                      </div>
+                      </>
                     )}
 
                     <Box display="flex" justifyContent="flex-end">
@@ -314,8 +327,9 @@ export default function CreateEditEquipment() {
                         type="submit"
                         variant="contained"
                         color="primary"
+                        startIcon={<SaveIcon />}
                         disabled={isSubmitting}
-                        data-cy="btn-save-event"
+                        data-cy="btn-save-equipment"
                       >
                         {isSubmitting ? <CircularProgress size={24} /> : 'Save'}
                       </Button>

@@ -62,8 +62,6 @@ describe('Proposal booking workflow', () => {
     )
       .first()
       .click();
-
-    cy.get('[role=status]', { timeout: 10000 }).should('not.be.visible');
   });
 
   describe('Book events step', () => {
@@ -249,6 +247,18 @@ describe('Proposal booking workflow', () => {
       cy.get('[role=alert]').contains(/removed/i);
       cy.wait(100);
       cy.get('@firstRow').contains(/Available equipment 2 - auto accept/i);
+    });
+
+    it('should show the assigned time slot on the equipment page', () => {
+      cy.visit('/equipments');
+      cy.get('[data-cy=btn-view-equipment]')
+        .eq(2)
+        .click();
+
+      cy.contains(/Available equipment 2 - auto accept/i);
+
+      cy.contains(/2020-09-21 14:00:00/);
+      cy.contains(/2020-09-21 15:00:00/);
     });
   });
 

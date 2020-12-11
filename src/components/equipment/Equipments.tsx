@@ -1,5 +1,8 @@
 import { Grid, TableCell, IconButton, Button } from '@material-ui/core';
-import { Visibility as VisibilityIcon } from '@material-ui/icons';
+import {
+  Visibility as VisibilityIcon,
+  Add as AddIcon,
+} from '@material-ui/icons';
 import React from 'react';
 import { generatePath } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -15,12 +18,26 @@ export type EquipmentTableRow = {
 };
 
 const defaultHeadCells: HeadCell<EquipmentTableRow>[] = [
-  { id: 'id', label: 'Actions' },
   { id: 'name', label: 'Name' },
 ];
 
 export default function Equipments() {
   const { equipments } = useEquipments();
+
+  const ViewEquipment = ({ row }: { row: EquipmentTableRow }) => {
+    return (
+      <Link
+        to={generatePath(PATH_VIEW_EQUIPMENT, { id: row.id })}
+        data-cy="btn-view-equipment"
+      >
+        <IconButton>
+          <VisibilityIcon />
+        </IconButton>
+      </Link>
+    );
+  };
+
+  const rowActions = [{ component: ViewEquipment }];
 
   return (
     <ContentContainer maxWidth={false}>
@@ -28,24 +45,16 @@ export default function Equipments() {
         <Grid item xs={12}>
           <StyledPaper margin={[0, 1]}>
             <Table
+              defaultOrderBy="name"
               tableTitle="Equipments"
               headCells={defaultHeadCells}
               rows={equipments}
+              rowActions={rowActions}
               extractKey={el => el.id}
               showEmptyRows
               renderRow={row => {
                 return (
                   <>
-                    <TableCell component="th" scope="row" padding="none">
-                      <Link
-                        to={generatePath(PATH_VIEW_EQUIPMENT, { id: row.id })}
-                        style={{ paddingLeft: '8px' }}
-                      >
-                        <IconButton>
-                          <VisibilityIcon />
-                        </IconButton>
-                      </Link>
-                    </TableCell>
                     <TableCell align="left">{row.name}</TableCell>
                   </>
                 );
@@ -55,10 +64,12 @@ export default function Equipments() {
               <Button
                 variant="contained"
                 color="primary"
+                startIcon={<AddIcon />}
                 component={Link}
                 to={PATH_CREATE_EQUIPMENT}
+                data-cy="btn-new-equipment"
               >
-                Create
+                New equipment
               </Button>
             </div>
           </StyledPaper>
