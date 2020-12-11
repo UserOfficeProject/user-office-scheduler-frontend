@@ -86,6 +86,7 @@ export default function Loader({
           [classes.relative]: relative,
           [classes.spaced]: spaced,
         })}
+        role="status"
       >
         <CircularProgress />
         {message && <div className={classes.message}>{message}</div>}

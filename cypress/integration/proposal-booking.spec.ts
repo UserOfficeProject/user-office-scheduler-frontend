@@ -62,6 +62,8 @@ describe('Proposal booking workflow', () => {
     )
       .first()
       .click();
+
+    cy.get('[role=status]', { timeout: 10000 }).should('not.be.visible');
   });
 
   describe('Book events step', () => {
