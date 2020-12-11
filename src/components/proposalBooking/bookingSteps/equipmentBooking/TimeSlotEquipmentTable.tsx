@@ -44,12 +44,13 @@ function Row({
 
   return (
     <>
-      <TableRow className={classes.root}>
+      <TableRow className={classes.root} role="row">
         <TableCell>
           <IconButton
             aria-label="expand row"
             size="small"
             onClick={() => setOpen(!open)}
+            data-cy="btn-expand-row"
           >
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
@@ -61,16 +62,16 @@ function Row({
           {row.endsAt}
         </TableCell>
       </TableRow>
-      <TableRow>
+      <TableRow role="row">
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
               <Typography variant="h6" gutterBottom component="div">
                 Equipments
               </Typography>
-              <MuiTable size="small" aria-label="purchases">
+              <MuiTable size="small" aria-label="equipments">
                 <TableHead>
-                  <TableRow>
+                  <TableRow role="row">
                     <TableCell>Actions</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Status</TableCell>
@@ -78,10 +79,11 @@ function Row({
                 </TableHead>
                 <TableBody>
                   {row.equipments.map((equipment: ScheduledEventEquipment) => (
-                    <TableRow key={equipment.id}>
+                    <TableRow key={equipment.id} role="row">
                       <TableCell component="th" scope="row">
                         <IconButton
                           size="small"
+                          data-cy="btn-delete-assignment"
                           onClick={() =>
                             onDeleteAssignment(equipment.id, row.id)
                           }
@@ -90,7 +92,9 @@ function Row({
                         </IconButton>
                       </TableCell>
                       <TableCell>{equipment.name}</TableCell>
-                      <TableCell>{equipment.status}</TableCell>
+                      <TableCell data-cy="equipment-row-status">
+                        {equipment.status}
+                      </TableCell>
                     </TableRow>
                   ))}
                   {row.equipments.length === 0 && (
@@ -117,7 +121,7 @@ export default function TimeSlotEquipmentTable({
 }) {
   return (
     <TableContainer component={Paper}>
-      <MuiTable aria-label="collapsible table">
+      <MuiTable aria-label="time slot table with equipments">
         <TableHead>
           <TableRow>
             <TableCell />

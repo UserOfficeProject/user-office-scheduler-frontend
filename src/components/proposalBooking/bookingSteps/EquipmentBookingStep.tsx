@@ -134,6 +134,7 @@ export default function EquipmentBookingStep({
               startIcon={<AddIcon />}
               className={classes.spacingLeft}
               onClick={() => setEquipmentDialog(true)}
+              data-cy="btn-book-equipment"
             >
               Book equipment
             </Button>

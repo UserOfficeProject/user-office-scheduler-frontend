@@ -68,7 +68,7 @@ export default function SelectEquipmentDialog({
   const selectActions = [
     {
       tooltip: 'Assign equipment',
-      icon: <DoneAllIcon data-cy="table-select-btn-add" />,
+      icon: <DoneAllIcon data-cy="btn-assign-all" />,
       onClick: handleAssign,
     },
   ];

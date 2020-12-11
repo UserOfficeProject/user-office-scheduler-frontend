@@ -122,7 +122,7 @@ function getActiveStep({
 const getActiveStepByStatus = (status: ProposalBookingStatus): number => {
   switch (status) {
     case ProposalBookingStatus.DRAFT:
-      return 1; // FIXME: 0
+      return 0;
     case ProposalBookingStatus.BOOKED:
       return 4;
     case ProposalBookingStatus.CLOSED:

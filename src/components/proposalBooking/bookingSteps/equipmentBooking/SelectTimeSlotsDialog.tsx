@@ -68,7 +68,7 @@ export default function SelectTimeSlotsDialog({
   const AssignEquipment = ({ row }: { row: TimeTableRow }) => {
     return (
       <IconButton
-        data-cy="btn-time-table-edit-row"
+        data-cy="btn-assign-to-scheduled-event"
         onClick={() => setSelectedScheduledEvent(row)}
       >
         <AddIcon />

@@ -32,6 +32,7 @@ export default function Equipments() {
               headCells={defaultHeadCells}
               rows={equipments}
               extractKey={el => el.id}
+              showEmptyRows
               renderRow={row => {
                 return (
                   <>
