@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Equipment } from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
 
-// TODO: filter for id and available time
 export default function useEquipments() {
   const [loading, setLoading] = useState(true);
   const [equipments, setEquipments] = useState<
