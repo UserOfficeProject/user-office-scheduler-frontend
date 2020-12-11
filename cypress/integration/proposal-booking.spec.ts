@@ -168,7 +168,7 @@ describe('Proposal booking workflow', () => {
       cy.contains(/time slots with equipments/i);
     });
 
-    it('TODO', () => {
+    it('should be able to assign available equipments to time slot', () => {
       cy.contains(/no records to show/i);
 
       cy.get('[data-cy=btn-book-equipment]').click();
@@ -194,7 +194,7 @@ describe('Proposal booking workflow', () => {
       cy.contains(/2020-09-21 15:00:00/);
     });
 
-    it('todo', () => {
+    it('should not show already assigned equipments', () => {
       cy.get('[data-cy=btn-book-equipment]').click();
 
       cy.get('[data-cy=btn-assign-to-scheduled-event').click();
@@ -202,7 +202,7 @@ describe('Proposal booking workflow', () => {
       cy.contains(/1-3 of 3/i);
     });
 
-    it('todo', () => {
+    it('should show the assignment status', () => {
       cy.contains(/2020-09-21 14:00:00/);
       cy.contains(/2020-09-21 15:00:00/);
 
@@ -219,7 +219,7 @@ describe('Proposal booking workflow', () => {
       ).contains(/accepted/i);
     });
 
-    it('todo', () => {
+    it('should be able to remove assigned equipment', () => {
       cy.get('[data-cy=btn-expand-row]').click();
 
       cy.get('[aria-label=equipments] tbody [role=row]:nth-child(1)').as(
@@ -252,7 +252,7 @@ describe('Proposal booking workflow', () => {
     });
   });
 
-  describe('', () => {
+  describe('Review step', () => {
     it('should request confirmation to activate proposal booking', () => {
       cy.get('[data-cy=btn-next]').click();
       cy.get('[data-cy=btn-next]').click();
