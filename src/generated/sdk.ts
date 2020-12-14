@@ -1035,6 +1035,12 @@ export type BulkUpsertScheduledEventsInput = {
   scheduledEvents: Array<SimpleScheduledEventInput>;
 };
 
+export type ConfirmEquipmentAssignmentInput = {
+  scheduledEventId: Scalars['ID'];
+  equipmentId: Scalars['ID'];
+  newStatus: EquipmentAssignmentStatus;
+};
+
 export type DbStat = {
   __typename?: 'DbStat';
   total: Scalars['Float'];
@@ -1162,6 +1168,12 @@ export type ScheduledEvent = {
   description: Maybe<Scalars['String']>;
   instrument: Instrument;
   equipments: Array<EquipmentWithAssignmentStatus>;
+  equipmentAssignmentStatus: Maybe<EquipmentAssignmentStatus>;
+};
+
+
+export type ScheduledEventEquipmentAssignmentStatusArgs = {
+  equipmentId: Scalars['ID'];
 };
 
 export enum ScheduledEventBookingType {
@@ -1622,6 +1634,7 @@ export type Mutation = {
   updateEquipment: EquipmentResponseWrap;
   assignToScheduledEvents: Scalars['Boolean'];
   deleteEquipmentAssignment: Scalars['Boolean'];
+  confirmEquipmentAssignment: Scalars['Boolean'];
   bulkUpsertLostTimes: LostTimesResponseWrap;
   createScheduledEvent: ScheduledEventResponseWrap;
   bulkUpsertScheduledEvents: ScheduledEventsResponseWrap;
@@ -2187,6 +2200,11 @@ export type MutationDeleteEquipmentAssignmentArgs = {
 };
 
 
+export type MutationConfirmEquipmentAssignmentArgs = {
+  confirmEquipmentAssignmentInput: ConfirmEquipmentAssignmentInput;
+};
+
+
 export type MutationBulkUpsertLostTimesArgs = {
   bulkUpsertLostTimes: BulkUpsertLostTimesInput;
 };
@@ -2220,6 +2238,16 @@ export type AssignEquipmentToScheduledEventMutationVariables = Exact<{
 export type AssignEquipmentToScheduledEventMutation = (
   { __typename?: 'Mutation' }
   & Pick<Mutation, 'assignToScheduledEvents'>
+);
+
+export type ConfirmEquipmentAssignmentMutationVariables = Exact<{
+  confirmEquipmentAssignmentInput: ConfirmEquipmentAssignmentInput;
+}>;
+
+
+export type ConfirmEquipmentAssignmentMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'confirmEquipmentAssignment'>
 );
 
 export type CreateEquipmentMutationVariables = Exact<{
@@ -2515,7 +2543,7 @@ export type GetEquipmentScheduledEventsQuery = (
   { __typename?: 'Query' }
   & { equipmentScheduledEvents: Array<(
     { __typename?: 'ScheduledEvent' }
-    & Pick<ScheduledEvent, 'id' | 'startsAt' | 'endsAt'>
+    & Pick<ScheduledEvent, 'id' | 'startsAt' | 'endsAt' | 'equipmentAssignmentStatus'>
   )> }
 );
 
@@ -2585,6 +2613,13 @@ export const AssignEquipmentToScheduledEventDocument = gql`
     mutation assignEquipmentToScheduledEvent($assignEquipmentsToScheduledEventInput: AssignEquipmentsToScheduledEventInput!) {
   assignToScheduledEvents(
     assignEquipmentsToScheduledEventInput: $assignEquipmentsToScheduledEventInput
+  )
+}
+    `;
+export const ConfirmEquipmentAssignmentDocument = gql`
+    mutation confirmEquipmentAssignment($confirmEquipmentAssignmentInput: ConfirmEquipmentAssignmentInput!) {
+  confirmEquipmentAssignment(
+    confirmEquipmentAssignmentInput: $confirmEquipmentAssignmentInput
   )
 }
     `;
@@ -2826,6 +2861,7 @@ export const GetEquipmentScheduledEventsDocument = gql`
     id
     startsAt
     endsAt
+    equipmentAssignmentStatus(equipmentId: $equipmentId)
   }
 }
     `;
@@ -2893,6 +2929,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
   return {
     assignEquipmentToScheduledEvent(variables: AssignEquipmentToScheduledEventMutationVariables): Promise<AssignEquipmentToScheduledEventMutation> {
       return withWrapper(() => client.request<AssignEquipmentToScheduledEventMutation>(print(AssignEquipmentToScheduledEventDocument), variables));
+    },
+    confirmEquipmentAssignment(variables: ConfirmEquipmentAssignmentMutationVariables): Promise<ConfirmEquipmentAssignmentMutation> {
+      return withWrapper(() => client.request<ConfirmEquipmentAssignmentMutation>(print(ConfirmEquipmentAssignmentDocument), variables));
     },
     createEquipment(variables: CreateEquipmentMutationVariables): Promise<CreateEquipmentMutation> {
       return withWrapper(() => client.request<CreateEquipmentMutation>(print(CreateEquipmentDocument), variables));

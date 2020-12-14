@@ -3,5 +3,6 @@ query getEquipmentScheduledEvents($equipmentId: ID!) {
     id
     startsAt
     endsAt
+    equipmentAssignmentStatus(equipmentId: $equipmentId)
   }
 }

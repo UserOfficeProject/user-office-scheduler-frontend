@@ -5,7 +5,7 @@ import { useDataApi } from 'hooks/common/useDataApi';
 
 export type EquipmentScheduledEvent = Pick<
   ScheduledEvent,
-  'id' | 'startsAt' | 'endsAt'
+  'id' | 'startsAt' | 'endsAt' | 'equipmentAssignmentStatus'
 >;
 
 export default function useEquipmentScheduledEvents(equipmentId: string) {

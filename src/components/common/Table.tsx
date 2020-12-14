@@ -203,9 +203,7 @@ export type TooltipAction = {
   clearSelect?: boolean;
 };
 
-type RowActions<T> = {
-  component: React.FC<{ row: T }>;
-};
+type RowActions<T> = React.FC<{ row: T }>;
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
@@ -272,7 +270,7 @@ export type TableProps<T extends object> = {
   tableContainerMaxHeight?: number;
   selectable?: boolean;
   tooltipActions?: TooltipAction[];
-  rowActions?: RowActions<T>[];
+  rowActions?: RowActions<T>;
   renderRow: (row: T) => JSX.Element;
   extractKey: (obj: T) => string;
   onDelete?: (ids: string[]) => void;
@@ -379,6 +377,8 @@ export default function Table<T extends { [k: string]: any }>({
     );
   }
 
+  const RowActions = rowActions;
+
   return (
     <>
       <EnhancedTableToolbar
@@ -416,7 +416,7 @@ export default function Table<T extends { [k: string]: any }>({
             onSelectAllClick={handleSelectAllClick}
             onRequestSort={handleRequestSort}
             selectable={selectable}
-            hasActions={rowActions ? rowActions.length > 0 : false}
+            hasActions={!!rowActions}
             rowCount={rows.length}
           />
           <TableBody>
@@ -457,15 +457,13 @@ export default function Table<T extends { [k: string]: any }>({
                     </TableCell>
                   )}
 
-                  {rowActions && rowActions.length > 0 && (
+                  {RowActions && (
                     <TableCell
                       component="th"
                       scope="row"
                       padding={selectable ? 'none' : 'checkbox'}
                     >
-                      {rowActions.map(({ component: Component }) => (
-                        <Component row={row} key={row.id} />
-                      ))}
+                      <RowActions row={row} />
                     </TableCell>
                   )}
                   {renderRow(row)}

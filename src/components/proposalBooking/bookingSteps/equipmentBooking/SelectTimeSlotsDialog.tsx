@@ -65,7 +65,7 @@ export default function SelectTimeSlotsDialog({
     }
   };
 
-  const AssignEquipment = ({ row }: { row: TimeTableRow }) => {
+  const RowActions = ({ row }: { row: TimeTableRow }) => {
     return (
       <IconButton
         data-cy="btn-assign-to-scheduled-event"
@@ -75,8 +75,6 @@ export default function SelectTimeSlotsDialog({
       </IconButton>
     );
   };
-
-  const rowActions = [{ component: AssignEquipment }];
 
   return (
     <Dialog open={isDialogOpen} maxWidth="md" fullWidth>
@@ -95,7 +93,7 @@ export default function SelectTimeSlotsDialog({
           defaultOrderBy="startsAt"
           tableTitle="Time Slots"
           headCells={timeTableHeadCells}
-          rowActions={rowActions}
+          rowActions={RowActions}
           showEmptyRows
           rows={rows}
           extractKey={el => el.id}

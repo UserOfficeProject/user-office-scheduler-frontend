@@ -159,7 +159,7 @@ describe('Proposal booking workflow', () => {
     });
   });
 
-  describe('Equipment booking step', () => {
+  describe.only('Equipment booking step', () => {
     beforeEach(() => {
       cy.get('[data-cy=btn-next]').click();
 
@@ -209,20 +209,63 @@ describe('Proposal booking workflow', () => {
       cy.contains(/Available equipment 1 - no auto accept/i);
       cy.contains(/Available equipment 2 - auto accept/i);
 
-      cy.get(
-        '[aria-label=equipments] tbody [role=row]:nth-child(1) > [data-cy=equipment-row-status]'
-      ).contains(/pending/i);
-      cy.get(
-        '[aria-label=equipments] tbody [role=row]:nth-child(2) > [data-cy=equipment-row-status]'
-      ).contains(/accepted/i);
+      cy.get('[aria-label=equipments] tbody [role=row]').as('row');
+
+      cy.get('@row')
+        .eq(0)
+        .find('[data-cy=equipment-row-status]')
+        .contains(/pending/i);
+
+      cy.get('@row')
+        .eq(1)
+        .find('[data-cy=equipment-row-status]')
+        .contains(/accepted/i);
+    });
+
+    it('should be able to accept / reject assignment request', () => {
+      cy.visit('/equipments');
+      cy.get('[data-cy=btn-view-equipment]')
+        .eq(1)
+        .click();
+
+      cy.contains(/Available equipment 1 - no auto accept/i);
+
+      cy.contains(/2020-09-21 14:00:00/);
+      cy.contains(/2020-09-21 15:00:00/);
+
+      cy.get('[data-cy=btn-confirm-assignment-accept]').click();
+
+      cy.contains(/confirmation/i);
+      cy.contains(/Are you sure you want to accept the request?/i);
+      cy.get('[data-cy=btn-cancel]').click();
+
+      cy.get('[data-cy=btn-confirm-assignment-reject]').click();
+
+      cy.contains(/confirmation/i);
+      cy.contains(/Are you sure you want to reject the request?/i);
+      cy.get('[data-cy=btn-ok]').click();
+
+      cy.get('[role=alert]').contains(/success/i);
     });
 
     it('should be able to remove assigned equipment', () => {
       cy.get('[data-cy=btn-expand-row]').click();
 
-      cy.get('[aria-label=equipments] tbody [role=row]:nth-child(1)').as(
-        'firstRow'
-      );
+      cy.get('[aria-label=equipments] tbody [role=row]').as('row');
+
+      cy.get('@row')
+        .eq(0)
+        .find('[data-cy=equipment-row-status]')
+        .contains(/rejected/i);
+
+      cy.get('@row')
+        .eq(1)
+        .find('[data-cy=equipment-row-status]')
+        .contains(/accepted/i);
+
+      cy.get('@row')
+        .first()
+        .as('firstRow');
 
       cy.get('@firstRow').contains(/Available equipment 1 - no auto accept/i);
 

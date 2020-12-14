@@ -8,6 +8,7 @@ import {
   makeStyles,
   IconButton,
   Box,
+  TableCell,
 } from '@material-ui/core';
 import {
   Comment as CommentIcon,
@@ -15,19 +16,39 @@ import {
   Edit as EditIcon,
   Person as PersonIcon,
   Assignment as AssignmentIcon,
+  Check as CheckIcon,
+  Clear as ClearIcon,
 } from '@material-ui/icons';
-import moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import moment, { Moment } from 'moment';
+import { useSnackbar } from 'notistack';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, generatePath } from 'react-router';
 import { Link } from 'react-router-dom';
 
 import Loader from 'components/common/Loader';
+import Table, { HeadCell } from 'components/common/Table';
 import { PATH_EDIT_EQUIPMENT } from 'components/paths';
-import TimeTable, { TimeTableRow } from 'components/proposalBooking/TimeTable';
+import { AppContext } from 'context/AppContext';
+import { EquipmentAssignmentStatus } from 'generated/sdk';
+import { useDataApi } from 'hooks/common/useDataApi';
 import useEquipment from 'hooks/equipment/useEquipment';
 import useEquipmentScheduledEvents from 'hooks/scheduledEvent/useEquipmentScheduledEvents';
 import { ContentContainer, StyledPaper } from 'styles/StyledComponents';
-import { parseTzLessDateTime } from 'utils/date';
+import { parseTzLessDateTime, toTzLessDateTime } from 'utils/date';
+
+type TableRow = {
+  id: string;
+  startsAt: Moment;
+  endsAt: Moment;
+
+  equipmentAssignmentStatus: EquipmentAssignmentStatus | null;
+};
+
+export const defaultHeadCells: HeadCell<TableRow>[] = [
+  { id: 'startsAt', label: 'Starts at' },
+  { id: 'endsAt', label: 'Ends at' },
+  { id: 'equipmentAssignmentStatus', label: 'Status' },
+];
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -79,6 +100,8 @@ const MaintenanceInfo = ({
 };
 
 export default function ViewEquipment() {
+  const { enqueueSnackbar } = useSnackbar();
+  const { showConfirmation } = useContext(AppContext);
   const { id } = useParams<{ id: string }>();
   const classes = useStyles();
   const { loading: equipmentLoading, equipment } = useEquipment(id);
@@ -86,7 +109,9 @@ export default function ViewEquipment() {
     loading: scheduledEventsLoading,
     scheduledEvents,
   } = useEquipmentScheduledEvents(id);
-  const [rows, setRows] = useState<TimeTableRow[]>([]);
+  const api = useDataApi();
+  const [rows, setRows] = useState<TableRow[]>([]);
+  const [confirmationLoading, setConfirmationLoading] = useState(false);
 
   useEffect(() => {
     if (!scheduledEventsLoading) {
@@ -105,15 +130,88 @@ export default function ViewEquipment() {
   }
 
   if (!equipment) {
-    // for now redirect
     return <div>Not found</div>;
   }
+
+  const handleConfirmAssignment = (
+    row: TableRow,
+    status: 'accept' | 'reject'
+  ) => {
+    showConfirmation({
+      message: (
+        <>
+          Are you sure you want to <strong>{status}</strong> the request?
+        </>
+      ),
+      cb: async () => {
+        setConfirmationLoading(true);
+
+        const newStatus =
+          status === 'accept'
+            ? EquipmentAssignmentStatus.ACCEPTED
+            : EquipmentAssignmentStatus.REJECTED;
+
+        const {
+          confirmEquipmentAssignment: success,
+        } = await api().confirmEquipmentAssignment({
+          confirmEquipmentAssignmentInput: {
+            equipmentId: id,
+            scheduledEventId: row.id,
+            newStatus,
+          },
+        });
+
+        setConfirmationLoading(false);
+
+        success &&
+          setRows(
+            rows.map(({ ...rest }) => ({
+              ...rest,
+              equipmentAssignmentStatus:
+                rest.id === row.id ? newStatus : rest.equipmentAssignmentStatus,
+            }))
+          );
+
+        success
+          ? enqueueSnackbar('Success', { variant: 'success' })
+          : enqueueSnackbar('Failed to confirm the assignment', {
+              variant: 'error',
+            });
+      },
+    });
+  };
+
+  const RowActions = ({ row }: { row: TableRow }) => {
+    if (row.equipmentAssignmentStatus !== EquipmentAssignmentStatus.PENDING) {
+      return null;
+    }
+
+    return (
+      <>
+        <IconButton
+          data-cy="btn-confirm-assignment-accept"
+          onClick={() => handleConfirmAssignment(row, 'accept')}
+        >
+          <CheckIcon />
+        </IconButton>
+
+        <IconButton
+          data-cy="btn-confirm-assignment-reject"
+          onClick={() => handleConfirmAssignment(row, 'reject')}
+        >
+          <ClearIcon />
+        </IconButton>
+      </>
+    );
+  };
 
   return (
     <ContentContainer maxWidth={false}>
       <Grid container>
         <Grid item xs={12}>
           <StyledPaper margin={[0, 1]}>
+            {confirmationLoading && <Loader />}
+
             <Box display="flex" justifyContent="flex-end">
               <Link to={generatePath(PATH_EDIT_EQUIPMENT, { id })}>
                 <IconButton data-cy="btn-edit-equipment">
@@ -183,10 +281,29 @@ export default function ViewEquipment() {
             {scheduledEventsLoading ? (
               <Loader relative spaced />
             ) : (
-              <TimeTable
-                rows={rows}
-                titleComponent="Scheduled events assigned to the equipment"
+              <Table
+                defaultOrderBy="startsAt"
+                tableTitle="Time Slots"
+                headCells={defaultHeadCells}
+                rowActions={RowActions}
                 showEmptyRows
+                rows={rows}
+                extractKey={el => el.id}
+                renderRow={row => {
+                  return (
+                    <>
+                      <TableCell align="left">
+                        {toTzLessDateTime(row.startsAt)}
+                      </TableCell>
+                      <TableCell align="left">
+                        {toTzLessDateTime(row.endsAt)}
+                      </TableCell>
+                      <TableCell align="left">
+                        {row.equipmentAssignmentStatus}
+                      </TableCell>
+                    </>
+                  );
+                }}
               />
             )}
           </StyledPaper>

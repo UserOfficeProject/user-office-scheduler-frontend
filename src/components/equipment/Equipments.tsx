@@ -24,7 +24,7 @@ const defaultHeadCells: HeadCell<EquipmentTableRow>[] = [
 export default function Equipments() {
   const { equipments } = useEquipments();
 
-  const ViewEquipment = ({ row }: { row: EquipmentTableRow }) => {
+  const RowActions = ({ row }: { row: EquipmentTableRow }) => {
     return (
       <Link
         to={generatePath(PATH_VIEW_EQUIPMENT, { id: row.id })}
@@ -37,8 +37,6 @@ export default function Equipments() {
     );
   };
 
-  const rowActions = [{ component: ViewEquipment }];
-
   return (
     <ContentContainer maxWidth={false}>
       <Grid container>
@@ -49,7 +47,7 @@ export default function Equipments() {
               tableTitle="Equipments"
               headCells={defaultHeadCells}
               rows={equipments}
-              rowActions={rowActions}
+              rowActions={RowActions}
               extractKey={el => el.id}
               showEmptyRows
               renderRow={row => {

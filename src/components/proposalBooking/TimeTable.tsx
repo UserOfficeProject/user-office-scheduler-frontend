@@ -204,7 +204,7 @@ export default function TimeTable<T extends TimeTableRow>({
     },
   ];
 
-  const EditAction = ({ row }: { row: TimeTableRow }) => {
+  const RowActions = ({ row }: { row: TimeTableRow }) => {
     return (
       <IconButton
         onClick={handleEditing(row.id)}
@@ -216,7 +216,7 @@ export default function TimeTable<T extends TimeTableRow>({
   };
 
   const rowActions =
-    selectable && editable && !editing ? [{ component: EditAction }] : [];
+    selectable && editable && !editing ? RowActions : undefined;
 
   return (
     <Table
