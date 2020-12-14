@@ -159,7 +159,7 @@ describe('Proposal booking workflow', () => {
     });
   });
 
-  describe.only('Equipment booking step', () => {
+  describe('Equipment booking step', () => {
     beforeEach(() => {
       cy.get('[data-cy=btn-next]').click();
 
