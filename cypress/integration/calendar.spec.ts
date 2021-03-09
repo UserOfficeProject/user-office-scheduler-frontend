@@ -17,6 +17,7 @@ function clickOnEventSlot(slot: string) {
 context('Calendar tests', () => {
   before(() => {
     cy.resetDB();
+    cy.resetSchedulerDB();
   });
 
   beforeEach(() => {

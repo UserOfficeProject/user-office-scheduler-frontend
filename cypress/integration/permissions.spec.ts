@@ -1,6 +1,7 @@
 context('Permission tests', () => {
   before(() => {
     cy.resetDB();
+    cy.resetSchedulerDB();
   });
 
   beforeEach(() => {

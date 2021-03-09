@@ -1,6 +1,7 @@
 context('Proposal booking tests ', () => {
   before(() => {
     cy.resetDB();
+    cy.resetSchedulerDB();
   });
 
   describe('Proposal booking calls/proposals list', () => {
@@ -229,8 +230,10 @@ context('Proposal booking tests ', () => {
 
       it('should be able to accept / reject assignment request', () => {
         cy.visit('/equipments');
-        cy.get('[data-cy=btn-view-equipment]')
-          .eq(1)
+
+        cy.contains(/Available equipment 1 - no auto accept/i)
+          .parent()
+          .find('[data-cy=btn-view-equipment]')
           .click();
 
         cy.contains(/Available equipment 1 - no auto accept/i);
@@ -299,8 +302,9 @@ context('Proposal booking tests ', () => {
 
       it('should show the assigned time slot on the equipment page', () => {
         cy.visit('/equipments');
-        cy.get('[data-cy=btn-view-equipment]')
-          .eq(2)
+        cy.contains(/Available equipment 2 - auto accept/i)
+          .parent()
+          .find('[data-cy=btn-view-equipment]')
           .click();
 
         cy.contains(/Available equipment 2 - auto accept/i);

@@ -1,6 +1,7 @@
 context('Equipment tests', () => {
   before(() => {
     cy.resetDB();
+    cy.resetSchedulerDB();
   });
 
   beforeEach(() => {
@@ -27,8 +28,9 @@ context('Equipment tests', () => {
 
   describe('Edit equipment', () => {
     beforeEach(() => {
-      cy.get('[data-cy=btn-view-equipment]')
-        .first()
+      cy.contains('1 Test equipment')
+        .parent()
+        .find('[data-cy=btn-view-equipment]')
         .click();
 
       cy.contains(/1 Test equipment/i);
@@ -40,7 +42,7 @@ context('Equipment tests', () => {
 
       cy.get('[data-cy=btn-save-equipment]').click();
 
-      cy.get('[data-cy=autoAccept]').contains(/yes/i);
+      cy.get('[data-cy=autoAccept]').contains('Yes');
     });
 
     it('should be able to set under maintenance indefinitely', () => {

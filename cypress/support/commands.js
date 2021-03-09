@@ -43,7 +43,7 @@ Cypress.Commands.add('resetDB', () => {
   }`;
   const authHeader = `Bearer ${Cypress.env('SVC_ACC_TOKEN')}`;
   const request = new GraphQLClient('/gateway', {
-    credentials: { token: authHeader },
+    headers: { authorization: authHeader },
   }).rawRequest(query, null);
 
   cy.wrap(request);
@@ -55,7 +55,7 @@ Cypress.Commands.add('resetSchedulerDB', () => {
   }`;
   const authHeader = `Bearer ${Cypress.env('SVC_ACC_TOKEN')}`;
   const request = new GraphQLClient('/gateway', {
-    credentials: { token: authHeader },
+    headers: { authorization: authHeader },
   }).rawRequest(query, null);
 
   cy.wrap(request);

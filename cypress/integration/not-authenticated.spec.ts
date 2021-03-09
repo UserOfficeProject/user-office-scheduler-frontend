@@ -1,6 +1,7 @@
 context('Not-authenticated tests', () => {
   before(() => {
     cy.resetDB();
+    cy.resetSchedulerDB();
   });
 
   beforeEach(() => {
