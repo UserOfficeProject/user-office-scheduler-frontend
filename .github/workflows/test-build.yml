@@ -85,7 +85,7 @@ jobs:
 
       - name: Pull cypress image
         run: |
-          DOCKERFILE_VERSION=${{ hashFiles('cypress/Dockerfile') }}
+          DOCKERFILE_VERSION=${{ hashFiles('cypress/Dockerfile', 'cypress/*.json') }}
           TAG="docker.pkg.github.com/userofficeproject/user-office-scheduler-frontend/e2e-cypress:$DOCKERFILE_VERSION"
           docker pull $TAG 
           docker tag $TAG e2e-cypress:latest
