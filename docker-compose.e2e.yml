@@ -24,7 +24,7 @@ services:
     environment:
       CYPRESS_SVC_ACC_TOKEN: $SVC_ACC_TOKEN
     entrypoint:
-      ["/wait-for-frontend.sh", "scheduler-proxy:80", "npm run cy:run"]
+      ["/wait-for-frontend.sh", "scheduler-frontend:80", "npm run cy:run"]
     depends_on:
       - scheduler-frontend
     volumes:
