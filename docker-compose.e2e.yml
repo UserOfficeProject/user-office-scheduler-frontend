@@ -1,12 +1,20 @@
 version: "3.1"
 
 services:
+  scheduler-proxy:
+    image: traefik:1.7 # The official Traefik docker image
+    command: --api --docker # Enables the web UI and tells Traefik to listen to docker
+    ports:
+      - "80:80" # The HTTP port
+      - "8080:8080" # The Web UI (enabled by --api)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
   scheduler-frontend:
     image: "duo-scheduler-frontend:${BUILD_TAG}"
-    ports:
-      - 80
-    environment:
-      - GATEWAY_HOST=gateway:4100
+    labels:
+      - "traefik.frontend.rule=PathPrefix:/"
+      - "traefik.port=80"
     depends_on:
       - gateway
 
@@ -16,7 +24,7 @@ services:
     environment:
       CYPRESS_SVC_ACC_TOKEN: $SVC_ACC_TOKEN
     entrypoint:
-      ["/wait-for-frontend.sh", "scheduler-frontend:80", "npm run cy:run"]
+      ["/wait-for-frontend.sh", "scheduler-proxy:80", "npm run cy:run"]
     depends_on:
       - scheduler-frontend
     volumes:
