@@ -36,7 +36,7 @@ Cypress.Commands.add('configureSession', token => {
 
 Cypress.Commands.add('resetDB', () => {
   const query = `mutation {
-    prepareDB {
+    prepareDB(includeSeeds: true) {
       log
       error
     }
@@ -51,7 +51,7 @@ Cypress.Commands.add('resetDB', () => {
 
 Cypress.Commands.add('resetSchedulerDB', () => {
   const query = `mutation {
-    resetSchedulerDb
+    resetSchedulerDb(includeSeeds: true)
   }`;
   const authHeader = `Bearer ${Cypress.env('SVC_ACC_TOKEN')}`;
   const request = new GraphQLClient('/gateway', {
