@@ -335,10 +335,7 @@ context('Proposal booking tests ', () => {
     describe('Review step', () => {
       it('should request confirmation to activate proposal booking', () => {
         cy.get('[data-cy=btn-next]').click();
-        cy.get('[data-cy=btn-next]').click();
-        cy.get('[data-cy=btn-next]').click();
 
-        cy.contains(/warning/i);
         cy.contains(/activate booking/i).as('activateBookingBtn');
 
         cy.get('@activateBookingBtn').should('be.disabled');
@@ -395,10 +392,7 @@ context('Proposal booking tests ', () => {
 
       it('should be able to go through the process again after restarting', () => {
         cy.get('[data-cy=btn-next]').click();
-        cy.get('[data-cy=btn-next]').click();
-        cy.get('[data-cy=btn-next]').click();
 
-        cy.contains(/warning/i);
         cy.contains(/activate booking/i).as('activateBookingBtn');
 
         cy.get('@activateBookingBtn').should('be.disabled');
