@@ -32,7 +32,7 @@ const useStyles = makeStyles(() => ({
 
 export enum ProposalBookingSteps {
   BOOK_EVENTS = 0,
-  EQUIPMENT_BOOKING,
+  BOOK_EQUIPMENT,
   // REQUEST_REVIEW,
   // REVIEW_FEEDBACKS,
   FINALIZE,
@@ -45,7 +45,7 @@ const ProposalBookingStepNameMap: Record<
   string
 > = {
   BOOK_EVENTS: 'Book events',
-  EQUIPMENT_BOOKING: 'Equipment booking',
+  BOOK_EQUIPMENT: 'Equipment booking',
   // REQUEST_REVIEW: 'Request review',
   // REVIEW_FEEDBACKS: 'Review feedbacks',
   FINALIZE: 'Finalize',
@@ -54,7 +54,7 @@ const ProposalBookingStepNameMap: Record<
 
 const steps = [
   ProposalBookingStepNameMap.BOOK_EVENTS,
-  ProposalBookingStepNameMap.EQUIPMENT_BOOKING,
+  ProposalBookingStepNameMap.BOOK_EQUIPMENT,
   ProposalBookingStepNameMap.FINALIZE,
   ProposalBookingStepNameMap.CLOSED,
 ];
@@ -76,7 +76,7 @@ function getActiveStep(props: ProposalBookingDialogStepProps) {
   switch (props.activeStep) {
     case ProposalBookingSteps.BOOK_EVENTS:
       return <BookingEventStep {...props} />;
-    case ProposalBookingSteps.EQUIPMENT_BOOKING:
+    case ProposalBookingSteps.BOOK_EQUIPMENT:
       return <EquipmentBookingStep {...props} />;
     // case ProposalBookingSteps.REQUEST_REVIEW:
     //   return (
@@ -222,6 +222,7 @@ export default function ProposalBookingDialog({
         {steps.map((label, index) => (
           <Step key={label}>
             <StepButton
+              data-cy={`booking-step-${ProposalBookingSteps[index]}`}
               onClick={handleSetStep(index)}
               completed={
                 index <=
