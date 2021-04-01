@@ -190,6 +190,11 @@ context('Proposal booking tests ', () => {
         cy.contains(/time slots with equipments/i);
       });
 
+      it('should be able to navigate using tabs', () => {
+        cy.get('[data-cy="booking-step-BOOK_EVENTS"]').click();
+        cy.contains('Save draft');
+      });
+
       it('should be able to assign available equipments to time slot', () => {
         cy.contains(/no records to show/i);
 
@@ -353,6 +358,15 @@ context('Proposal booking tests ', () => {
     });
 
     describe('Final step', () => {
+      it('should be able to navigate using tabs', () => {
+        cy.get('[data-cy="booking-step-BOOK_EVENTS"]').click();
+        cy.contains(/save draft/i);
+        cy.get('[data-cy="booking-step-BOOK_EQUIPMENT"]').click();
+        cy.contains(/time slots with equipments/i);
+        cy.get('[data-cy="booking-step-FINALIZE"]').click();
+        cy.contains(/save lost time/i);
+      });
+
       it('should be able to log lost time', () => {
         cy.get('[data-cy=btn-add-lost-time]').click();
 
