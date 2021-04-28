@@ -32,9 +32,12 @@ export default function generateScheduledEventFilter(
     }
     default:
       console.warn('activeView not implemented:', activeView);
+      const newStartsAt = moment(startsAt).startOf('week');
 
       return {
         instrumentId,
+        startsAt: toTzLessDateTime(newStartsAt),
+        endsAt: toTzLessDateTime(newStartsAt),
       };
   }
 }

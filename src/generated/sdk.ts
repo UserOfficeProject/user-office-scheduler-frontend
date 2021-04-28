@@ -1330,6 +1330,11 @@ export type UserReviewsArgs = {
   callId?: Maybe<Scalars['Int']>;
 };
 
+
+export type UserProposalsArgs = {
+  instrumentId?: Maybe<Scalars['Int']>;
+};
+
 export type UserQueryResult = {
   __typename?: 'UserQueryResult';
   users: Array<BasicUserDetails>;
@@ -1535,8 +1540,8 @@ export enum ScheduledEventBookingType {
 }
 
 export type ScheduledEventFilter = {
-  startsAt?: Maybe<Scalars['TzLessDateTime']>;
-  endsAt?: Maybe<Scalars['TzLessDateTime']>;
+  startsAt: Scalars['TzLessDateTime'];
+  endsAt: Scalars['TzLessDateTime'];
   instrumentId?: Maybe<Scalars['ID']>;
 };
 
