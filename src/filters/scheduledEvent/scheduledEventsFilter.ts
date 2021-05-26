@@ -35,6 +35,8 @@ export default function generateScheduledEventFilter(
       const newStartsAt = moment(startsAt).startOf('week');
 
       return {
+        startsAt: toTzLessDateTime(newStartsAt),
+        endsAt: toTzLessDateTime(newStartsAt.add(1, 'week')),
         instrumentId,
         startsAt: toTzLessDateTime(newStartsAt),
         endsAt: toTzLessDateTime(newStartsAt),
