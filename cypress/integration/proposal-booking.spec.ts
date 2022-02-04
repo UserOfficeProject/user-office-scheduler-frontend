@@ -884,7 +884,7 @@ context('Proposal booking tests ', () => {
 
             cy.activateEvent({
               input: {
-                id: result.createScheduledEvent.scheduledEvent.id,
+                ids: [result.createScheduledEvent.scheduledEvent.id],
               },
             });
           }

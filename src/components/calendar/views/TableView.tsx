@@ -2,6 +2,11 @@ import MaterialTable, { Column } from '@material-table/core';
 import { EventAvailable } from '@mui/icons-material';
 import ViewIcon from '@mui/icons-material/Visibility';
 import { Alert, IconButton, Tooltip, useTheme } from '@mui/material';
+import {
+  getTranslation,
+  ResourceId,
+} from '@user-office-software/duo-localisation';
+import { useSnackbar } from 'notistack';
 import React, { useContext, useState } from 'react';
 
 import { tableIcons } from 'components/common/TableIcons';
@@ -11,6 +16,7 @@ import {
   ScheduledEventBookingType,
   ScheduledEventFilter,
 } from 'generated/sdk';
+import { useDataApi } from 'hooks/common/useDataApi';
 
 import { CalendarScheduledEventWithUniqeId } from '../CalendarViewContainer';
 import { getBookingTypeStyle } from '../common/Event';
@@ -19,14 +25,18 @@ import Toolbar from '../common/Toolbar';
 type TableViewProps = {
   filter: ScheduledEventFilter;
   events: CalendarScheduledEventWithUniqeId[];
+  refresh: () => void;
   onSelectEvent: (data: CalendarScheduledEventWithUniqeId) => void;
 };
 const TableView: React.FC<TableViewProps> = ({
   filter,
   events,
+  refresh,
   onSelectEvent,
 }) => {
   const theme = useTheme();
+  const api = useDataApi();
+  const { enqueueSnackbar } = useSnackbar();
   const { showConfirmation } = useContext(AppContext);
   const [selectedExperimentTimes, setSelectedExperimentTimes] = useState<
     CalendarScheduledEventWithUniqeId[]
@@ -95,7 +105,50 @@ const TableView: React.FC<TableViewProps> = ({
   const activateSelectedExperimentTimes = async (
     userOperationsExperimentsInDraftState: CalendarScheduledEventWithUniqeId[]
   ) => {
-    // Activation call goes here
+    try {
+      if (!userOperationsExperimentsInDraftState.length) {
+        return;
+      }
+
+      const {
+        activateScheduledEvents: { error, scheduledEvents },
+      } = await api().activateScheduledEvents({
+        input: {
+          ids: userOperationsExperimentsInDraftState.map(
+            (item) => item.eventId
+          ),
+        },
+      });
+
+      const activatedEvents = scheduledEvents.filter((event) => 'id' in event);
+
+      if (error) {
+        enqueueSnackbar(getTranslation(error as ResourceId), {
+          variant: 'error',
+        });
+      } else if (
+        activatedEvents.length !== userOperationsExperimentsInDraftState.length
+      ) {
+        enqueueSnackbar(
+          'Some of the selected experiment times could not be activated. Please make sure that all their equipment booking requests are accepted',
+          {
+            variant: 'error',
+          }
+        );
+
+        if (activatedEvents.length) {
+          refresh();
+        }
+      } else {
+        enqueueSnackbar('Experiment times activated successfully!', {
+          variant: 'success',
+        });
+
+        refresh();
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const onActivateSelectedExperimentTimes = () => {
@@ -110,12 +163,15 @@ const TableView: React.FC<TableViewProps> = ({
     showConfirmation({
       message: (
         <>
-          Are you sure you want to <strong>activate</strong> selected events?
+          Are you sure you want to <strong>activate</strong> selected experiment
+          times?
           {userOperationsExperimentsInDraftState.length !==
             selectedExperimentTimes.length && (
             <Alert severity="warning">
-              Only &quot;DRAFT&quot; events that are of type &quot;USER
-              OPERATIONS&quot; will be activated
+              You have selected some events that are not ready for{' '}
+              <strong>activation</strong>. Only <strong>DRAFT</strong> events
+              that are of type <strong>USER OPERATIONS</strong> with all
+              equipment bookings <strong>accepted</strong> will be activated
             </Alert>
           )}
         </>
