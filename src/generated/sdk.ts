@@ -348,6 +348,7 @@ export type Equipment = {
   color: Maybe<Scalars['String']>;
   createdAt: Scalars['DateTime'];
   description: Maybe<Scalars['String']>;
+  equipmentInstruments: Array<Instrument>;
   equipmentResponsible: Array<User>;
   events: Array<ScheduledEvent>;
   id: Scalars['Int'];
@@ -374,6 +375,7 @@ export type EquipmentInput = {
   autoAccept: Scalars['Boolean'];
   color?: InputMaybe<Scalars['String']>;
   description: Scalars['String'];
+  instrumentIds?: InputMaybe<Array<Scalars['Int']>>;
   maintenanceEndsAt?: InputMaybe<Scalars['TzLessDateTime']>;
   maintenanceStartsAt?: InputMaybe<Scalars['TzLessDateTime']>;
   name: Scalars['String'];
@@ -394,6 +396,7 @@ export type EquipmentWithAssignmentStatus = {
   color: Maybe<Scalars['String']>;
   createdAt: Scalars['DateTime'];
   description: Maybe<Scalars['String']>;
+  equipmentInstruments: Array<Instrument>;
   equipmentResponsible: Array<User>;
   events: Array<ScheduledEvent>;
   id: Scalars['Int'];
@@ -3572,12 +3575,12 @@ export type GetEquipmentQueryVariables = Exact<{
 }>;
 
 
-export type GetEquipmentQuery = { equipment: { id: number, createdAt: any, updatedAt: any, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean, owner: { id: number, firstname: string, lastname: string } | null, equipmentResponsible: Array<{ id: number, firstname: string, lastname: string }> } | null };
+export type GetEquipmentQuery = { equipment: { id: number, createdAt: any, updatedAt: any, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean, owner: { id: number, firstname: string, lastname: string } | null, equipmentResponsible: Array<{ id: number, firstname: string, lastname: string }>, equipmentInstruments: Array<{ id: number, name: string }> } | null };
 
 export type GetEquipmentsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetEquipmentsQuery = { equipments: Array<{ id: number, createdAt: any, updatedAt: any, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean }> };
+export type GetEquipmentsQuery = { equipments: Array<{ id: number, createdAt: any, updatedAt: any, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean, equipmentInstruments: Array<{ id: number, name: string }> }> };
 
 export type UpdateEquipmentMutationVariables = Exact<{
   id: Scalars['Int'];
@@ -3927,6 +3930,10 @@ export const GetEquipmentDocument = gql`
       firstname
       lastname
     }
+    equipmentInstruments {
+      id
+      name
+    }
   }
 }
     `;
@@ -3942,6 +3949,10 @@ export const GetEquipmentsDocument = gql`
     maintenanceStartsAt
     maintenanceEndsAt
     autoAccept
+    equipmentInstruments {
+      id
+      name
+    }
   }
 }
     `;
