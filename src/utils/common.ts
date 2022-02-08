@@ -12,4 +12,4 @@ export function comaSeparatedArrayValues<T>(
   return array.length
     ? array.map((item, index) => `${index ? ', ' : ''} ${item[propertyToShow]}`)
     : '-';
-};
+}

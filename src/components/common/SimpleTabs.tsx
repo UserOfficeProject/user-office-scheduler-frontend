@@ -41,7 +41,7 @@ const a11yProps = (index: number, orientation: 'horizontal' | 'vertical') => ({
 type SimpleTabsProps = {
   children: React.ReactNode[];
   tab?: number;
-  tabNames: string[];
+  tabNames: React.ReactNode[];
   orientation?: 'horizontal' | 'vertical';
   handleAdd?: () => Promise<void>;
   noItemsText?: string;
