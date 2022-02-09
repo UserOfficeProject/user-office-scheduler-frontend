@@ -24,7 +24,6 @@ function TabPanel(props: TabPanelProps) {
       id={`${orientation}-tab-${index}`}
       aria-labelledby={`${orientation}-tabpanel-${index}`}
       width="100%"
-      className="tinyScroll"
       overflow="auto"
       {...other}
     >
@@ -61,6 +60,10 @@ const useStyles = makeStyles((theme) => ({
   },
   tabsNoItems: {
     minWidth: '150px',
+
+    '& .MuiTabs-indicator': {
+      display: 'none',
+    },
   },
   tabsRightBorder: {
     borderRight: `1px solid ${theme.palette.divider}`,
@@ -68,6 +71,10 @@ const useStyles = makeStyles((theme) => ({
   addButton: {
     minWidth: 'auto',
     padding: theme.spacing(1),
+
+    '&.MuiTab-root.Mui-selected': {
+      background: 'none',
+    },
 
     '&.Mui-disabled': {
       pointerEvents: 'all',
