@@ -139,6 +139,15 @@ context('Proposal booking tests ', () => {
 
         cy.finishedLoading();
 
+        cy.get('.MuiTabs-root button[id="vertical-tab-0"]')
+          .should('have.css', 'background-color')
+          .and('not.eq', 'unset')
+          .and('not.eq', 'transparent');
+
+        cy.get('[data-cy="status-indicator"]')
+          .should('have.css', 'color')
+          .and('eq', 'rgba(0, 0, 0, 0.54)');
+
         cy.get('[data-cy="experiment-time-wrapper"]').contains(
           defaultEventBookingHourDateTime
         );
@@ -361,6 +370,8 @@ context('Proposal booking tests ', () => {
           'contain.text',
           'Experiment time should be booked between call cycle start and end date'
         );
+
+        cy.get('[data-cy="status-indicator"]').should('have.css', 'color');
 
         cy.get(
           '[data-cy="some-experiment-time-outside-cycle-interval-warning"]'
@@ -951,6 +962,8 @@ context('Proposal booking tests ', () => {
         cy.get(
           '[data-cy="time-slot-booked-equipments-table"] [aria-label="Book equipment"]'
         ).should('not.exist');
+
+        cy.get('[data-cy="status-indicator"]').should('have.css', 'color');
       });
     });
 
@@ -1176,6 +1189,10 @@ context('Proposal booking tests ', () => {
           .then((ariaLabel) => {
             expect(ariaLabel).not.to.be.empty;
           });
+
+        cy.get('[data-cy="status-indicator"]')
+          .should('have.css', 'color')
+          .and('eq', 'rgba(0, 0, 0, 0.26)');
       });
 
       it('Completed events should have gray color and opacity', () => {

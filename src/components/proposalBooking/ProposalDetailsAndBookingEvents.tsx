@@ -101,7 +101,7 @@ const useStyles = makeStyles((theme) => ({
     },
 
     '& .MuiTab-root.Mui-selected': {
-      background: alpha(theme.palette.primary.main, 0.2),
+      backgroundColor: alpha(theme.palette.primary.main, 0.2),
     },
   },
   experimentTimeStatusIndicator: {
@@ -533,6 +533,7 @@ export default function ProposalDetailsAndBookingEvents({
               <CircleIcon
                 className={classes.experimentTimeStatusIndicator}
                 color={getIconColorBasedOnStatus(item)}
+                data-cy="status-indicator"
               />
             </Tooltip>
             {`${item.startsAt} - ${item.endsAt}`}

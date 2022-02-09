@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(1),
 
     '&.MuiTab-root.Mui-selected': {
-      background: 'none',
+      backgroundColor: 'unset !important',
     },
 
     '&.Mui-disabled': {
