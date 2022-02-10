@@ -611,6 +611,7 @@ context('Proposal booking tests ', () => {
             description: existingEquipmentsData[0].description,
             autoAccept: existingEquipmentsData[0].autoAccept,
             instrumentIds: [existingInstrument.id],
+            ownerUserId: 1,
           },
         });
         cy.updateEquipment({
@@ -620,6 +621,7 @@ context('Proposal booking tests ', () => {
             description: existingEquipmentsData[1].description,
             autoAccept: existingEquipmentsData[1].autoAccept,
             instrumentIds: [existingInstrument.id],
+            ownerUserId: 1,
           },
         });
         cy.visit({
@@ -709,7 +711,7 @@ context('Proposal booking tests ', () => {
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
-        cy.get('[data-cy="add-equipment-responsible"]').click();
+        cy.get('[data-cy="manage-equipment-responsible"]').click();
         cy.get('input[type="checkbox"]').first().click();
         cy.get('[data-cy="assign-selected-users"]').click();
         cy.get('[role=alert]').contains(/success/i);
@@ -721,7 +723,7 @@ context('Proposal booking tests ', () => {
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
-        cy.get('[data-cy="add-equipment-responsible"]').click();
+        cy.get('[data-cy="manage-equipment-responsible"]').click();
         cy.get('input[type="checkbox"]').first().click();
         cy.get('[data-cy="assign-selected-users"]').click();
         cy.get('[role=alert]').contains(/success/i);
@@ -737,6 +739,7 @@ context('Proposal booking tests ', () => {
             description: existingEquipmentsData[0].description,
             autoAccept: existingEquipmentsData[0].autoAccept,
             instrumentIds: [existingInstrument.id],
+            ownerUserId: 1,
           },
         });
         cy.updateEquipment({
@@ -746,6 +749,7 @@ context('Proposal booking tests ', () => {
             description: existingEquipmentsData[1].description,
             autoAccept: existingEquipmentsData[1].autoAccept,
             instrumentIds: [existingInstrument.id],
+            ownerUserId: 1,
           },
         });
         cy.createEvent({ input: createdUserOperationsEvent }).then((result) => {

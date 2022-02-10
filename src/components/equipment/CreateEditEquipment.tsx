@@ -16,6 +16,7 @@ import {
   useTheme,
   TextField as MuiTextField,
   TextFieldProps,
+  MenuItem,
 } from '@mui/material';
 import {
   getTranslation,
@@ -23,22 +24,28 @@ import {
 } from '@user-office-software/duo-localisation';
 import { equipmentValidationSchema } from '@user-office-software/duo-validation';
 import { Formik, Form, Field } from 'formik';
-import { TextField, CheckboxWithLabel, Autocomplete } from 'formik-mui';
+import { TextField, CheckboxWithLabel, Autocomplete, Select } from 'formik-mui';
 import moment, { Moment } from 'moment';
 import { useSnackbar } from 'notistack';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useHistory, generatePath } from 'react-router';
 
 import FormikColorPicker from 'components/common/FormikColorPicker';
 import FormikDateTimeRangePicker from 'components/common/FormikDateTimeRangePicker';
 import Loader from 'components/common/Loader';
 import { PATH_VIEW_EQUIPMENT } from 'components/paths';
-import { Equipment, EquipmentInput } from 'generated/sdk';
+import { UserContext } from 'context/UserContext';
+import {
+  BasicUserDetailsFragment,
+  Equipment,
+  EquipmentInput,
+} from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
 import useEquipment from 'hooks/equipment/useEquipment';
 import useUserInstruments, {
   PartialInstrument,
 } from 'hooks/instrument/useUserInstruments';
+import { useUsersData } from 'hooks/user/useUsersData';
 import { StyledContainer, StyledPaper } from 'styles/StyledComponents';
 import {
   toTzLessDateTime,
@@ -46,15 +53,22 @@ import {
   TZ_LESS_DATE_TIME_LOW_PREC_FORMAT,
   TZ_LESS_DATE_TIME_LOW_PREC_MASK,
 } from 'utils/date';
+import { getFullUserName } from 'utils/user';
 
 export default function CreateEditEquipment() {
   const history = useHistory();
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useContext(UserContext);
   const { id } = useParams<{ id?: string }>();
   const [underMaintenance, setUnderMaintenance] = useState(false);
   const [indefiniteMaintenance, setIndefiniteMaintenance] = useState('1');
   const { instruments, loading: loadingInstruments } = useUserInstruments();
+  // NOTE: We can't limit loaded users to INSTRUMENT_SCIENTIST only because equipment owner can be USER_OFFICER also
+  const {
+    usersData: instrumentScientists,
+    loadingUsersData: loadingInstrumentScientists,
+  } = useUsersData({});
 
   const api = useDataApi();
   const { loading, equipment } = useEquipment(parseInt(id ?? '0'));
@@ -104,6 +118,8 @@ export default function CreateEditEquipment() {
             ? parseTzLessDateTime(equipment.maintenanceEndsAt)
             : null,
         ],
+        equipmentResponsible: equipment.equipmentResponsible || [],
+        ownerUserId: equipment.owner?.id || '',
         autoAccept: equipment.autoAccept,
         color: equipment.color || '#7cb5ec',
       }
@@ -112,6 +128,8 @@ export default function CreateEditEquipment() {
         description: '',
         instruments: [],
         maintenanceStartsEndsAt: [moment(), moment()],
+        equipmentResponsible: [],
+        ownerUserId: user?.id || '',
         autoAccept: false,
         color: '#7cb5ec',
       };
@@ -155,6 +173,10 @@ export default function CreateEditEquipment() {
                   maintenanceStartsAt: null,
                   maintenanceEndsAt: null,
                   color: values.color,
+                  equipmentResponsible: values.equipmentResponsible.map(
+                    (user) => user.id
+                  ),
+                  ownerUserId: +values.ownerUserId,
                 };
 
                 if (!underMaintenance) {
@@ -210,15 +232,42 @@ export default function CreateEditEquipment() {
               {({ isSubmitting }) => {
                 return (
                   <Form>
-                    <Field
-                      component={TextField}
-                      name="name"
-                      label="Equipment name"
-                      margin="normal"
-                      variant="standard"
-                      fullWidth
-                      data-cy="name"
-                    />
+                    <Grid container spacing={1} alignItems="center">
+                      <Grid item sm={6} xs={12}>
+                        <Field
+                          component={TextField}
+                          name="name"
+                          label="Equipment name"
+                          margin="normal"
+                          variant="standard"
+                          fullWidth
+                          data-cy="name"
+                        />
+                      </Grid>
+                      <Grid item sm={6} xs={12}>
+                        <Field
+                          component={Select}
+                          formControl={{
+                            fullWidth: true,
+                            variant: 'standard',
+                            required: true,
+                            margin: 'normal',
+                          }}
+                          inputLabel={{
+                            variant: 'standard',
+                          }}
+                          name="ownerUserId"
+                          label="Equipment owner"
+                          data-cy="equipment-owner"
+                        >
+                          {instrumentScientists.users.map((user, i) => (
+                            <MenuItem value={user.id} key={i}>
+                              {getFullUserName(user)}
+                            </MenuItem>
+                          ))}
+                        </Field>
+                      </Grid>
+                    </Grid>
 
                     <Field
                       component={TextField}
@@ -233,33 +282,66 @@ export default function CreateEditEquipment() {
                       data-cy="description"
                     />
 
-                    <Field
-                      component={Autocomplete}
-                      multiple
-                      options={instruments}
-                      noOptionsText="No instruments"
-                      name="instruments"
-                      isOptionEqualToValue={(
-                        option: PartialInstrument,
-                        value: PartialInstrument
-                      ) => option.id === value.id}
-                      label="Equipment instruments"
-                      loading={loadingInstruments}
-                      fullWidth
-                      data-cy="equipment-instruments"
-                      getOptionLabel={(option: PartialInstrument) =>
-                        option.name
-                      }
-                      renderInput={(params: TextFieldProps) => (
-                        <MuiTextField
-                          {...params}
+                    <Grid container spacing={1} alignItems="center">
+                      <Grid item sm={6} xs={12}>
+                        <Field
+                          component={Autocomplete}
+                          multiple
+                          options={instruments}
+                          noOptionsText="No instruments"
+                          name="instruments"
+                          isOptionEqualToValue={(
+                            option: PartialInstrument,
+                            value: PartialInstrument
+                          ) => option.id === value.id}
                           label="Equipment instruments"
-                          margin="normal"
-                          variant="standard"
-                          placeholder="Equipment instruments"
+                          loading={loadingInstruments}
+                          fullWidth
+                          data-cy="equipment-instruments"
+                          getOptionLabel={(option: PartialInstrument) =>
+                            option.name
+                          }
+                          renderInput={(params: TextFieldProps) => (
+                            <MuiTextField
+                              {...params}
+                              label="Equipment instruments"
+                              margin="normal"
+                              variant="standard"
+                              placeholder="Equipment instruments"
+                            />
+                          )}
                         />
-                      )}
-                    />
+                      </Grid>
+                      <Grid item sm={6} xs={12}>
+                        <Field
+                          component={Autocomplete}
+                          multiple
+                          options={instrumentScientists.users}
+                          noOptionsText="No instrument scientists"
+                          name="equipmentResponsible"
+                          isOptionEqualToValue={(
+                            option: BasicUserDetailsFragment,
+                            value: BasicUserDetailsFragment
+                          ) => option.id === value.id}
+                          label="Equipment responsible people"
+                          loading={loadingInstrumentScientists}
+                          fullWidth
+                          data-cy="equipment-responsible-people"
+                          getOptionLabel={(option: BasicUserDetailsFragment) =>
+                            getFullUserName(option)
+                          }
+                          renderInput={(params: TextFieldProps) => (
+                            <MuiTextField
+                              {...params}
+                              label="Equipment responsible people"
+                              margin="normal"
+                              variant="standard"
+                              placeholder="Equipment responsible people"
+                            />
+                          )}
+                        />
+                      </Grid>
+                    </Grid>
 
                     <Grid container>
                       <Grid item sm={4} xs={12}>

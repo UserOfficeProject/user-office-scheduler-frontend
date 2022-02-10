@@ -17,6 +17,7 @@ const newEquipment = {
   name: faker.random.words(2),
   description: '',
   autoAccept: false,
+  ownerUserId: 1,
 };
 
 const createdUserOperationsEvent = {

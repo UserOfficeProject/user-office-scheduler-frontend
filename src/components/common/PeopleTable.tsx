@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import MaterialTable, { Query, Options, Column } from '@material-table/core';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
@@ -6,14 +5,16 @@ import React, { useState, useEffect } from 'react';
 
 import { ActionButtonContainer } from 'components/common/ActionButtonContainer';
 import { tableIcons } from 'components/common/TableIcons';
-import { BasicUserDetails, UserRole } from 'generated/sdk';
+import { BasicUserDetailsFragment, getSdk, UserRole } from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
 
-function sendUserRequest(
-  searchQuery: Query<any>,
-  api: any,
+async function sendUserRequest(
+  searchQuery: Query<
+    BasicUserDetailsFragment & { tableData: { checked: boolean } }
+  >,
+  api: () => ReturnType<typeof getSdk>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  selectedUsers: number[] | undefined | null,
+  subtractedUsers: number[] | undefined | null,
   selectedParticipants: number[],
   userRole: UserRole | null
 ) {
@@ -21,50 +22,51 @@ function sendUserRequest(
     filter: searchQuery.search,
     offset: searchQuery.pageSize * searchQuery.page,
     first: searchQuery.pageSize,
-    subtractUsers: selectedUsers ? selectedUsers : [],
+    subtractUsers: subtractedUsers ? subtractedUsers : [],
     userRole: userRole,
   };
 
   setLoading(true);
 
-  return api()
-    .getUsers(variables)
-    .then((data: any) => {
-      setLoading(false);
+  const data = await api().getUsers(variables);
+  setLoading(false);
 
+  return {
+    page: searchQuery.page,
+    totalCount: data?.users?.totalCount,
+    data: data?.users?.users.map((user) => {
       return {
-        page: searchQuery.page,
-        totalCount: data?.users?.totalCount,
-        data: data?.users?.users.map((user: BasicUserDetails) => {
-          return {
-            firstname: user.firstname,
-            lastname: user.lastname,
-            organisation: user.organisation,
-            id: user.id,
-            tableData: { checked: selectedParticipants.includes(user.id) },
-          };
-        }),
+        id: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        organisation: user.organisation,
+        position: user.position,
+        tableData: { checked: selectedParticipants.includes(user.id) },
       };
-    });
+    }),
+  };
 }
 
-type PeopleTableProps<T extends BasicUserDetails = BasicUserDetails> = {
+type PeopleTableProps<
+  T extends BasicUserDetailsFragment = BasicUserDetailsFragment
+> = {
   selection: boolean;
   isLoading?: boolean;
   title?: string;
   action?: {
-    fn: (data: any) => void;
+    fn: (data: T) => void;
     actionIcon: JSX.Element;
     actionText: string;
   };
   isFreeAction?: boolean;
   data?: T[];
   search?: boolean;
-  onRemove?: (item: any) => void;
-  onUpdate?: (item: any[]) => void;
-  selectedUsers?: number[] | null;
-  mtOptions?: Options<BasicUserDetails>;
-  columns?: Column<any>[];
+  onRemove?: (item: T) => void;
+  onUpdate?: (item: T[]) => void;
+  selectedUsers?: T[] | null;
+  showSelectedUsers?: boolean;
+  mtOptions?: Options<T>;
+  columns?: Column<T & { tableData: { checked: boolean } }>[];
   userRole?: UserRole;
 };
 
@@ -98,6 +100,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
   isFreeAction,
   mtOptions,
   selectedUsers,
+  showSelectedUsers = false,
   userRole,
   title,
 }) => {
@@ -105,8 +108,8 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
   const [loading, setLoading] = useState(isLoading);
   const [pageSize, setPageSize] = useState(5);
   const [selectedParticipants, setSelectedParticipants] = useState<
-    BasicUserDetails[]
-  >([]);
+    BasicUserDetailsFragment[]
+  >(showSelectedUsers ? selectedUsers || [] : []);
   const [searchText, setSearchText] = useState('');
   const [currentPageIds, setCurrentPageIds] = useState<number[]>([]);
 
@@ -135,17 +138,17 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
       tooltip: action.actionText,
       onClick: (
         event: React.MouseEvent<JSX.Element>,
-        rowData: BasicUserDetails | BasicUserDetails[]
-      ) => action.fn(rowData),
+        rowData: BasicUserDetailsFragment | BasicUserDetailsFragment[]
+      ) => action.fn(rowData as BasicUserDetailsFragment),
     });
 
   const tableData = data
-    ? (data as (BasicUserDetails & {
+    ? (data as (BasicUserDetailsFragment & {
         tableData: { checked: boolean };
       })[])
     : (
         query: Query<
-          BasicUserDetails & {
+          BasicUserDetailsFragment & {
             tableData: {
               checked: boolean;
             };
@@ -158,12 +161,19 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
 
         setPageSize(query.pageSize);
 
+        const subtractedUsers = showSelectedUsers
+          ? null
+          : selectedUsers?.map((user) => user.id);
+        const alreadySelectedParticipants = showSelectedUsers
+          ? selectedUsers?.map((user) => user.id) || []
+          : selectedParticipants.map(({ id }) => id);
+
         return sendUserRequest(
           query,
           api,
           setLoading,
-          selectedUsers,
-          selectedParticipants.map(({ id }) => id),
+          subtractedUsers,
+          alreadySelectedParticipants,
           userRole || null
         ).then((users: any) => {
           setCurrentPageIds(users.data.map(({ id }: { id: number }) => id));
@@ -199,7 +209,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
                   firstname: selectedItem.firstname,
                   lastname: selectedItem.lastname,
                   organisation: selectedItem.organisation,
-                })) as BasicUserDetails[]),
+                })) as BasicUserDetailsFragment[]),
               ]);
             }
 
@@ -216,7 +226,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
                     lastname: selectedItem.lastname,
                     organisation: selectedItem.organisation,
                   },
-                ] as BasicUserDetails[])
+                ] as BasicUserDetailsFragment[])
               : selectedParticipants.filter(({ id }) => id !== selectedItem.id)
           );
         }}
@@ -257,7 +267,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
                 setSelectedParticipants([]);
               }
             }}
-            disabled={selectedParticipants.length === 0}
+            disabled={!showSelectedUsers && selectedParticipants.length === 0}
             data-cy="assign-selected-users"
           >
             Update

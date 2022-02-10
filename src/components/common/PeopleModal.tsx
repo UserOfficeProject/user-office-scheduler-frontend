@@ -4,26 +4,29 @@ import DialogContent from '@mui/material/DialogContent';
 import React from 'react';
 
 import PeopleTable from 'components/common/PeopleTable';
-import { UserRole, BasicUserDetails } from 'generated/sdk';
+import { UserRole, BasicUserDetailsFragment } from 'generated/sdk';
 
 function PeopleModal(props: {
   title: string;
-  addParticipants: (data: BasicUserDetails[]) => void;
+  addParticipants: (data: BasicUserDetailsFragment[]) => void;
   show: boolean;
   close: () => void;
   selection?: boolean;
-  selectedUsers?: number[] | null;
+  selectedUsers?: BasicUserDetailsFragment[] | null;
+  showSelectedUsers?: boolean;
   userRole?: UserRole;
-  data?: BasicUserDetails[];
+  data?: BasicUserDetailsFragment[];
 }) {
-  const addUser = (rowData: BasicUserDetails) => {
+  const addUser = (rowData: BasicUserDetailsFragment) => {
     props.addParticipants([
       {
+        id: rowData.id,
         firstname: rowData.firstname,
         lastname: rowData.lastname,
         organisation: rowData.organisation,
-        id: rowData.id,
-      } as BasicUserDetails,
+        position: rowData.position,
+        placeholder: rowData.placeholder,
+      },
     ]);
   };
 
@@ -45,9 +48,10 @@ function PeopleModal(props: {
             actionIcon: <AddBox data-cy="select-user" />,
           }}
           selectedUsers={props.selectedUsers}
+          showSelectedUsers={props.showSelectedUsers}
           selection={!!props.selection}
           userRole={props.userRole}
-          onUpdate={(data) => props.addParticipants(data as BasicUserDetails[])}
+          onUpdate={props.addParticipants}
           data={props.data}
         />
       </DialogContent>
