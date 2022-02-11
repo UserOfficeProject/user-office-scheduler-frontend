@@ -39,6 +39,7 @@ import {
   BasicUserDetailsFragment,
   Equipment,
   EquipmentInput,
+  UserRole,
 } from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
 import useEquipment from 'hooks/equipment/useEquipment';
@@ -65,10 +66,12 @@ export default function CreateEditEquipment() {
   const [indefiniteMaintenance, setIndefiniteMaintenance] = useState('1');
   const { instruments, loading: loadingInstruments } = useUserInstruments();
   // NOTE: We can't limit loaded users to INSTRUMENT_SCIENTIST only because equipment owner can be USER_OFFICER also
+  const { usersData: allUsers } = useUsersData({});
+  // NOTE: Here we load only instrument scientists for responsible people
   const {
     usersData: instrumentScientists,
     loadingUsersData: loadingInstrumentScientists,
-  } = useUsersData({});
+  } = useUsersData({ userRole: UserRole.INSTRUMENT_SCIENTIST });
 
   const api = useDataApi();
   const { loading, equipment } = useEquipment(parseInt(id ?? '0'));
@@ -210,6 +213,9 @@ export default function CreateEditEquipment() {
                     enqueueError(error as ResourceId);
                     helper.resetForm();
                   } else {
+                    enqueueSnackbar('Equipment updated successfully', {
+                      variant: 'success',
+                    });
                     history.push(generatePath(PATH_VIEW_EQUIPMENT, { id }));
                   }
                 } else {
@@ -219,13 +225,18 @@ export default function CreateEditEquipment() {
                     newEquipmentInput: input,
                   });
 
-                  error
-                    ? enqueueError(error as ResourceId)
-                    : history.push(
-                        generatePath(PATH_VIEW_EQUIPMENT, {
-                          id: (equipment as Equipment).id,
-                        })
-                      );
+                  if (error) {
+                    enqueueError(error as ResourceId);
+                  } else {
+                    enqueueSnackbar('Equipment created successfully', {
+                      variant: 'success',
+                    });
+                    history.push(
+                      generatePath(PATH_VIEW_EQUIPMENT, {
+                        id: (equipment as Equipment).id,
+                      })
+                    );
+                  }
                 }
               }}
             >
@@ -260,7 +271,7 @@ export default function CreateEditEquipment() {
                           label="Equipment owner"
                           data-cy="equipment-owner"
                         >
-                          {instrumentScientists.users.map((user, i) => (
+                          {allUsers.users.map((user, i) => (
                             <MenuItem value={user.id} key={i}>
                               {getFullUserName(user)}
                             </MenuItem>
@@ -326,7 +337,7 @@ export default function CreateEditEquipment() {
                           label="Equipment responsible people"
                           loading={loadingInstrumentScientists}
                           fullWidth
-                          data-cy="equipment-responsible-people"
+                          data-cy="equipment-responsible-people-select"
                           getOptionLabel={(option: BasicUserDetailsFragment) =>
                             getFullUserName(option)
                           }

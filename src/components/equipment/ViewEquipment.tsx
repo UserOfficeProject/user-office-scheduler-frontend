@@ -282,7 +282,10 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
                       className={classes.listItemText}
                     />
                   </ListItem>
-                  <ListItem disableGutters>
+                  <ListItem
+                    disableGutters
+                    data-cy="equipment-responsible-people"
+                  >
                     <ListItemAvatar>
                       <Avatar>
                         <GroupIcon />

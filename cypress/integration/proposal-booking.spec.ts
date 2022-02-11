@@ -676,7 +676,8 @@ context('Proposal booking tests ', () => {
           'All booked equipments must be accepted before activating the booking'
         );
       });
-      it('Officer should be able to assign change equipment owner people', () => {
+
+      it('Officer should be able to assign change equipment owner', () => {
         cy.initializeSession('UserOfficer');
         let equipmentOwner: string;
         cy.visit({
@@ -690,19 +691,19 @@ context('Proposal booking tests ', () => {
         cy.get('[data-cy="equipment-owner"]').then((element) => {
           equipmentOwner = element.text();
         });
-        cy.get('[data-cy="change-equipment-owner"]').click();
-        cy.get(
-          '[data-cy="equipment-responsible"] button[aria-label="Select user"]'
-        )
-          .first()
-          .click();
+        cy.get('[data-cy=btn-edit-equipment]').click();
+        cy.get('[data-cy="equipment-owner"]').click();
+        cy.get('#menu-ownerUserId [role="option"]').first().click();
+        cy.get('[data-cy="btn-save-equipment"]').click();
         cy.get('[role=alert]').contains(/success/i);
         cy.get('[data-cy="equipment-owner"]').should((element) => {
           expect(element.text()).to.not.equal(equipmentOwner);
         });
       });
+
       it('Officer should be able to assign equipment responsible people', () => {
         cy.initializeSession('UserOfficer');
+        let equipmentResponsible: string;
         cy.visit({
           url: '/equipments',
           timeout: 15000,
@@ -711,22 +712,49 @@ context('Proposal booking tests ', () => {
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
-        cy.get('[data-cy="manage-equipment-responsible"]').click();
-        cy.get('input[type="checkbox"]').first().click();
-        cy.get('[data-cy="assign-selected-users"]').click();
-        cy.get('[role=alert]').contains(/success/i);
-        cy.visit({
-          url: '/equipments',
-          timeout: 15000,
+
+        cy.get('[data-cy="equipment-responsible-people"]').then((element) => {
+          equipmentResponsible = element.text();
         });
-        cy.contains(existingEquipmentsData[1].name)
-          .parent()
-          .find('[data-testid="VisibilityIcon"]')
+
+        cy.get('[data-cy=btn-edit-equipment]').click();
+
+        cy.get('[data-cy="equipment-responsible-people-select"]').click();
+        cy.get('[role="presentation"] .MuiAutocomplete-listbox li')
+          .first()
           .click();
-        cy.get('[data-cy="manage-equipment-responsible"]').click();
-        cy.get('input[type="checkbox"]').first().click();
-        cy.get('[data-cy="assign-selected-users"]').click();
+        cy.get('[data-cy="equipment-responsible-people-select"]').click();
+        cy.get('[role="presentation"] .MuiAutocomplete-listbox li')
+          .last()
+          .click();
+        cy.get('[data-cy="btn-save-equipment"]').click();
+
         cy.get('[role=alert]').contains(/success/i);
+        cy.get('[data-cy="equipment-responsible-people"]').then((element) => {
+          expect(element.text()).to.not.equal(equipmentResponsible);
+        });
+
+        cy.get('[data-cy=btn-edit-equipment]').click();
+
+        cy.get('[data-cy="equipment-responsible-people-select"]').click();
+        cy.get('[role="presentation"] .MuiAutocomplete-listbox li')
+          .first()
+          .click();
+        cy.get('[data-cy="equipment-responsible-people-select"]').click();
+        cy.get('[role="presentation"] .MuiAutocomplete-listbox li')
+          .last()
+          .click();
+
+        cy.get(
+          '[data-cy="equipment-responsible-people-select"] .MuiInput-root .MuiChip-root'
+        ).should('not.exist');
+        cy.get('[data-cy="btn-save-equipment"]').click();
+
+        cy.get('[role=alert]').contains(/success/i);
+
+        cy.get('[data-cy="equipment-responsible-people"]').then((element) => {
+          expect(element.text()).to.equal(equipmentResponsible);
+        });
       });
     });
 
