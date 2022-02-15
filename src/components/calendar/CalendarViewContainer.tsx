@@ -69,7 +69,8 @@ import CalendarTodoBox from './CalendarTodoBox';
 import CalendarView from './CalendarView';
 import { CalendarScheduledEvent } from './Event';
 import TableView from './TableView';
-import TimeLineView from './TimeLineView';
+// import TimeLineView from './TimeLineView';
+import TimeLineViewTest from './TimeLineView_dragNdrop';
 
 export enum SchedulerViews {
   CALENDAR = 'Calendar',
@@ -653,11 +654,19 @@ export default function CalendarViewContainer() {
 
       case SchedulerViews.TIMELINE:
         return (
-          <TimeLineView
-            filter={filter}
-            events={events}
-            onSelectEvent={onSelectEvent}
-          />
+          <>
+            {/* <TimeLineView
+              filter={filter}
+              events={events}
+              onSelectEvent={onSelectEvent}
+            /> */}
+            <TimeLineViewTest
+              filter={filter}
+              events={events}
+              onSelectEvent={onSelectEvent}
+              onDropFromOutside={onDropFromOutside}
+            />
+          </>
         );
 
       default:
@@ -734,7 +743,7 @@ export default function CalendarViewContainer() {
               )}
               <Grid
                 item
-                xs={isTabletOrMobile ? 12 : showTodoBox ? 10 : 12}
+                xs={isTabletOrMobile ? 12 : showTodoBox ? 12 : 12}
                 className={`${classes.fullHeight}`}
                 style={{
                   transition: theme.transitions.create('all', {
@@ -750,10 +759,10 @@ export default function CalendarViewContainer() {
               <Grid
                 item
                 xs
-                className={`${classes.collapsibleGrid} ${
-                  isTabletOrMobile && classes.collapsibleGridMobile
-                }  ${isTablet && classes.collapsibleGridTablet}
-                ${!showTodoBox && classes.collapsibleGridNoWidth}`}
+                // className={`${classes.collapsibleGrid} ${
+                //   isTabletOrMobile && classes.collapsibleGridMobile
+                // }  ${isTablet && classes.collapsibleGridTablet}
+                // ${!showTodoBox && classes.collapsibleGridNoWidth}`}
               >
                 <Collapse in={showTodoBox} data-cy="collapsible-event-toolbar">
                   {showTodoBox && (
