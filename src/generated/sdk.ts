@@ -515,6 +515,7 @@ export type Feature = {
 
 export enum FeatureId {
   EMAIL_INVITE = 'EMAIL_INVITE',
+  EMAIL_SEARCH = 'EMAIL_SEARCH',
   EXTERNAL_AUTH = 'EXTERNAL_AUTH',
   RISK_ASSESSMENT = 'RISK_ASSESSMENT',
   SCHEDULER = 'SCHEDULER',
@@ -765,7 +766,7 @@ export type Mutation = {
   cloneSample: SampleResponseWrap;
   cloneSampleEsi: SampleEsiResponseWrap;
   cloneTemplate: TemplateResponseWrap;
-  confirmEquipmentAssignment: Scalars['Boolean'];
+  confirmEquipmentAssignment: SchedulerSuccessResponseWrap;
   createApiAccessToken: ApiAccessTokenResponseWrap;
   createCall: CallResponseWrap;
   createEquipment: EquipmentResponseWrap;
@@ -3039,6 +3040,11 @@ export type SchedulerConfig = {
   authRedirect: Scalars['String'];
 };
 
+export type SchedulerSuccessResponseWrap = {
+  error: Maybe<Scalars['String']>;
+  isSuccess: Maybe<Scalars['Boolean']>;
+};
+
 export type SelectionFromOptionsConfig = {
   isMultipleSelect: Scalars['Boolean'];
   options: Array<Scalars['String']>;
@@ -3545,7 +3551,7 @@ export type ConfirmEquipmentAssignmentMutationVariables = Exact<{
 }>;
 
 
-export type ConfirmEquipmentAssignmentMutation = { confirmEquipmentAssignment: boolean };
+export type ConfirmEquipmentAssignmentMutation = { confirmEquipmentAssignment: { error: string | null, isSuccess: boolean | null } };
 
 export type CreateEquipmentMutationVariables = Exact<{
   newEquipmentInput: EquipmentInput;
@@ -3845,7 +3851,10 @@ export const ConfirmEquipmentAssignmentDocument = gql`
     mutation confirmEquipmentAssignment($confirmEquipmentAssignmentInput: ConfirmEquipmentAssignmentInput!) {
   confirmEquipmentAssignment(
     confirmEquipmentAssignmentInput: $confirmEquipmentAssignmentInput
-  )
+  ) {
+    error
+    isSuccess
+  }
 }
     `;
 export const CreateEquipmentDocument = gql`

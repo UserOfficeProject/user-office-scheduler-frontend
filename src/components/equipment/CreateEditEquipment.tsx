@@ -26,14 +26,15 @@ import { Formik, Form, Field } from 'formik';
 import { TextField, CheckboxWithLabel, Autocomplete } from 'formik-mui';
 import moment, { Moment } from 'moment';
 import { useSnackbar } from 'notistack';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useHistory, generatePath } from 'react-router';
 
 import FormikColorPicker from 'components/common/FormikColorPicker';
 import FormikDateTimeRangePicker from 'components/common/FormikDateTimeRangePicker';
 import Loader from 'components/common/Loader';
 import { PATH_VIEW_EQUIPMENT } from 'components/paths';
-import { Equipment, EquipmentInput } from 'generated/sdk';
+import { UserContext } from 'context/UserContext';
+import { Equipment, EquipmentInput, UserRole } from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
 import useEquipment from 'hooks/equipment/useEquipment';
 import useUserInstruments, {
@@ -46,6 +47,10 @@ import {
   TZ_LESS_DATE_TIME_LOW_PREC_FORMAT,
   TZ_LESS_DATE_TIME_LOW_PREC_MASK,
 } from 'utils/date';
+import {
+  isEquipmentOwner,
+  isEquipmentResponsiblePerson,
+} from 'utils/permissions';
 
 export default function CreateEditEquipment() {
   const history = useHistory();
@@ -55,7 +60,7 @@ export default function CreateEditEquipment() {
   const [underMaintenance, setUnderMaintenance] = useState(false);
   const [indefiniteMaintenance, setIndefiniteMaintenance] = useState('1');
   const { instruments, loading: loadingInstruments } = useUserInstruments();
-
+  const { user: loggedInUser, currentRole } = useContext(UserContext);
   const api = useDataApi();
   const { loading, equipment } = useEquipment(parseInt(id ?? '0'));
 
@@ -89,6 +94,21 @@ export default function CreateEditEquipment() {
 
   if (loading) {
     return <Loader container />;
+  }
+
+  const hasEditAccess =
+    currentRole === UserRole.USER_OFFICER ||
+    isEquipmentResponsiblePerson(equipment, loggedInUser, currentRole) ||
+    isEquipmentOwner(equipment, loggedInUser);
+
+  if (id && !hasEditAccess) {
+    history.goBack();
+
+    return (
+      <Box textAlign="center" mt={5}>
+        No access permissions
+      </Box>
+    );
   }
 
   const initialValues = equipment

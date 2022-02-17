@@ -34,6 +34,7 @@ import PeopleModal from 'components/common/PeopleModal';
 import { tableIcons } from 'components/common/TableIcons';
 import { PATH_EDIT_EQUIPMENT } from 'components/paths';
 import { AppContext } from 'context/AppContext';
+import { UserContext } from 'context/UserContext';
 import {
   BasicUserDetails,
   EquipmentAssignmentStatus,
@@ -46,6 +47,10 @@ import useEquipmentScheduledEvents from 'hooks/scheduledEvent/useEquipmentSchedu
 import { StyledContainer, StyledPaper } from 'styles/StyledComponents';
 import { comaSeparatedArrayValues } from 'utils/common';
 import { parseTzLessDateTime, toTzLessDateTime } from 'utils/date';
+import {
+  isEquipmentOwner,
+  isEquipmentResponsiblePerson,
+} from 'utils/permissions';
 import { getFullUserName } from 'utils/user';
 
 type TableRow = {
@@ -124,6 +129,7 @@ const columns: Column<TableRow>[] = [
 export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
   const { enqueueSnackbar } = useSnackbar();
   const { showConfirmation } = useContext(AppContext);
+  const { user: loggedInUser, currentRole } = useContext(UserContext);
   const { id } = useParams<{ id?: string }>();
   const finalEquipmentId = id ? parseInt(id) : equipmentId;
   const classes = useStyles();
@@ -146,15 +152,19 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
       startsAt: toTzLessDateTime(moment(new Date()).startOf('day')),
       endsAt: toTzLessDateTime(moment(new Date()).add(1, 'year').endOf('day')),
     });
-  const equipmentResponsible = equipment?.equipmentResponsible;
+  const equipmentResponsiblePeople = equipment?.equipmentResponsible;
   useEffect(() => {
-    if (equipmentResponsible) {
-      setSelectedUsers(equipmentResponsible);
+    if (equipmentResponsiblePeople) {
+      setSelectedUsers(equipmentResponsiblePeople);
     }
-  }, [equipmentResponsible]);
+  }, [equipmentResponsiblePeople]);
   const api = useDataApi();
   const [rows, setRows] = useState<TableRow[]>([]);
   const [confirmationLoading, setConfirmationLoading] = useState(false);
+  const hasEditAccess =
+    currentRole === UserRole.USER_OFFICER ||
+    isEquipmentResponsiblePerson(equipment, loggedInUser, currentRole) ||
+    isEquipmentOwner(equipment, loggedInUser);
   useEffect(() => {
     if (!scheduledEventsLoading && scheduledEvents?.length && equipment) {
       const equipmentWithEvents = scheduledEvents.find(
@@ -205,18 +215,19 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
             ? EquipmentAssignmentStatus.ACCEPTED
             : EquipmentAssignmentStatus.REJECTED;
 
-        const { confirmEquipmentAssignment: success } =
-          await api().confirmEquipmentAssignment({
-            confirmEquipmentAssignmentInput: {
-              equipmentId: finalEquipmentId,
-              scheduledEventId: row.id,
-              newStatus,
-            },
-          });
+        const {
+          confirmEquipmentAssignment: { isSuccess },
+        } = await api().confirmEquipmentAssignment({
+          confirmEquipmentAssignmentInput: {
+            equipmentId: finalEquipmentId,
+            scheduledEventId: row.id,
+            newStatus,
+          },
+        });
 
         setConfirmationLoading(false);
 
-        success &&
+        isSuccess &&
           setRows(
             rows.map(({ ...rest }) => ({
               ...rest,
@@ -225,9 +236,9 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
             }))
           );
 
-        success
+        isSuccess
           ? enqueueSnackbar('Success', { variant: 'success' })
-          : enqueueSnackbar('Failed to confirm the assignment', {
+          : enqueueSnackbar(`Failed to ${status} the assignment`, {
               variant: 'error',
             });
       },
@@ -313,17 +324,19 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
           <StyledPaper margin={[0, 1]}>
             {confirmationLoading && <Loader />}
 
-            <Box display="flex" justifyContent="flex-end">
-              <Link
-                to={generatePath(PATH_EDIT_EQUIPMENT, {
-                  id: pathEquipmentId,
-                })}
-              >
-                <IconButton data-cy="btn-edit-equipment">
-                  <EditIcon />
-                </IconButton>
-              </Link>
-            </Box>
+            {hasEditAccess && (
+              <Box display="flex" justifyContent="flex-end">
+                <Link
+                  to={generatePath(PATH_EDIT_EQUIPMENT, {
+                    id: pathEquipmentId,
+                  })}
+                >
+                  <IconButton data-cy="btn-edit-equipment">
+                    <EditIcon />
+                  </IconButton>
+                </Link>
+              </Box>
+            )}
 
             <Grid container spacing={2}>
               <Grid item sm={6}>

@@ -122,18 +122,19 @@ export default function ViewRequests() {
           return;
         }
 
-        const { confirmEquipmentAssignment: success } =
-          await api().confirmEquipmentAssignment({
-            confirmEquipmentAssignmentInput: {
-              equipmentId: row.equipmentId,
-              scheduledEventId: row.id,
-              newStatus,
-            },
-          });
+        const {
+          confirmEquipmentAssignment: { isSuccess },
+        } = await api().confirmEquipmentAssignment({
+          confirmEquipmentAssignmentInput: {
+            equipmentId: row.equipmentId,
+            scheduledEventId: row.id,
+            newStatus,
+          },
+        });
 
         setConfirmationLoading(false);
 
-        success &&
+        isSuccess &&
           setRows(
             rows.map(({ ...rest }) => ({
               ...rest,
@@ -142,7 +143,7 @@ export default function ViewRequests() {
             }))
           );
 
-        success
+        isSuccess
           ? enqueueSnackbar('Success', { variant: 'success' })
           : enqueueSnackbar('Failed to confirm the assignment', {
               variant: 'error',
