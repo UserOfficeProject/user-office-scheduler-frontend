@@ -762,7 +762,7 @@ context('Proposal booking tests ', () => {
           .contains(/accepted/i);
       });
 
-      it('should show available equipments that are booked by proposals that instrument scientist is part of even if he/she is not equipment owner or responsible', () => {
+      it('should not show equipment requests even if the equipment is booked by proposals that instrument scientist is part of if user is not equipment owner or responsible', () => {
         cy.finishedLoading();
 
         cy.get('[data-cy="input-equipment-select"] input')
@@ -778,11 +778,63 @@ context('Proposal booking tests ', () => {
 
         cy.visit('/requests');
 
+        cy.get('[data-cy="equipments-requests-table"]').should(
+          'not.contain',
+          existingEquipmentsData[0].name
+        );
+        cy.get('[data-cy="equipments-requests-table"]').should(
+          'not.contain',
+          existingEquipmentsData[1].name
+        );
+      });
+
+      it('should show available equipments that are booked by proposals that instrument scientist is part of even if he/she is not equipment owner or responsible', () => {
+        cy.finishedLoading();
+
+        cy.get('[data-cy="input-equipment-select"] input')
+          .should('not.be.disabled')
+          .click();
+
+        cy.get('[role="presentation"]').contains(
+          existingEquipmentsData[0].name
+        );
+        cy.get('[role="presentation"]').contains(
+          existingEquipmentsData[1].name
+        );
+
+        cy.visit('/equipments');
+
         cy.contains(existingEquipmentsData[0].name);
         cy.contains(existingEquipmentsData[1].name);
       });
 
-      it('should be able to open time slot by clicking on the calendar equipment event', () => {
+      it('should not be able to open time slot by clicking on the calendar equipment event if not responsible person or owner', () => {
+        cy.finishedLoading();
+        cy.get('[data-cy="input-equipment-select"] input')
+          .should('not.be.disabled')
+          .click();
+        cy.get('[role="presentation"]')
+          .contains(existingEquipmentsData[1].name)
+          .click();
+
+        cy.get('.rbc-time-content .rbc-event').should('not.exist');
+      });
+
+      it('should be able to open time slot by clicking on the calendar equipment event if it is responsible person or owner', () => {
+        // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
+        cy.visit('/equipments');
+        cy.contains(existingEquipmentsData[1].name)
+          .parent()
+          .find('[data-testid="VisibilityIcon"]')
+          .click();
+        cy.get('[data-cy="add-equipment-responsible"]').click();
+        cy.get('input[type="checkbox"]').first().click();
+        cy.get('[data-cy="assign-selected-users"]').click();
+        cy.get('[role=alert]').contains(/success/i);
+        // <-----------------------------------------------
+
+        cy.visit('/calendar');
+
         cy.finishedLoading();
         cy.get('[data-cy="input-equipment-select"] input')
           .should('not.be.disabled')
@@ -813,7 +865,20 @@ context('Proposal booking tests ', () => {
         ).click();
       });
 
-      it('should be able to view equipment assignment request from requests page', () => {
+      it('should be able to view equipment assignment request from requests page for equipments that user is owner or responsible', () => {
+        cy.initializeSession('UserOfficer');
+        // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
+        cy.visit('/equipments');
+        cy.contains(existingEquipmentsData[0].name)
+          .parent()
+          .find('[data-testid="VisibilityIcon"]')
+          .click();
+        cy.get('[data-cy="add-equipment-responsible"]').click();
+        cy.get('input[type="checkbox"]').first().click();
+        cy.get('[data-cy="assign-selected-users"]').click();
+        cy.get('[role=alert]').contains(/success/i);
+        // <-----------------------------------------------
+
         cy.visit('/requests');
 
         cy.contains(existingEquipmentsData[0].name)
@@ -839,6 +904,18 @@ context('Proposal booking tests ', () => {
       });
 
       it('should be able to accept / reject assignment request', () => {
+        // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
+        cy.visit('/equipments');
+        cy.contains(existingEquipmentsData[0].name)
+          .parent()
+          .find('[data-testid="VisibilityIcon"]')
+          .click();
+        cy.get('[data-cy="add-equipment-responsible"]').click();
+        cy.get('input[type="checkbox"]').first().click();
+        cy.get('[data-cy="assign-selected-users"]').click();
+        cy.get('[role=alert]').contains(/success/i);
+        // <-----------------------------------------------
+
         cy.visit('/equipments');
 
         cy.contains(existingEquipmentsData[0].name)
@@ -898,6 +975,18 @@ context('Proposal booking tests ', () => {
       });
 
       it('should show the assigned time slot on the equipment page', () => {
+        // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
+        cy.visit('/equipments');
+        cy.contains(existingEquipmentsData[1].name)
+          .parent()
+          .find('[data-testid="VisibilityIcon"]')
+          .click();
+        cy.get('[data-cy="add-equipment-responsible"]').click();
+        cy.get('input[type="checkbox"]').first().click();
+        cy.get('[data-cy="assign-selected-users"]').click();
+        cy.get('[role=alert]').contains(/success/i);
+        // <-----------------------------------------------
+
         cy.visit('/equipments');
         cy.contains(existingEquipmentsData[1].name)
           .parent()
