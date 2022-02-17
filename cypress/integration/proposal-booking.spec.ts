@@ -69,10 +69,7 @@ context('Proposal booking tests ', () => {
     it('should inform the user if the instrument has no calls', () => {
       cy.initializeSession('InstrumentScientist_2');
 
-      cy.visit({
-        url: '/calendar',
-        timeout: 15000,
-      });
+      cy.visit('/calendar');
 
       cy.finishedLoading();
 
@@ -85,10 +82,7 @@ context('Proposal booking tests ', () => {
     it('should show the list of calls of the instrument has calls', () => {
       cy.initializeSession('InstrumentScientist_1');
 
-      cy.visit({
-        url: '/calendar',
-        timeout: 15000,
-      });
+      cy.visit('/calendar');
 
       cy.finishedLoading();
 
@@ -103,10 +97,7 @@ context('Proposal booking tests ', () => {
     it('should not crash if the referenced proposal was deleted', () => {
       cy.initializeSession('UserOfficer');
 
-      cy.visit({
-        url: '/calendar',
-        timeout: 15000,
-      });
+      cy.visit('/calendar');
 
       cy.finishedLoading();
 
@@ -124,10 +115,7 @@ context('Proposal booking tests ', () => {
 
     describe('Book events', () => {
       beforeEach(() => {
-        cy.visit({
-          url: '/calendar',
-          timeout: 15000,
-        });
+        cy.visit('/calendar');
       });
       it('should be able to add new experiment time', () => {
         cy.finishedLoading();
@@ -278,6 +266,17 @@ context('Proposal booking tests ', () => {
         selectInstrument();
         cy.finishedLoading();
         cy.get('#instrument-calls-tree-view [role=treeitem]').first().click();
+
+        // NOTE: This check for Mui-focused class is to prevent a bug in our drag and drop from TreeView with new MUI v5
+        // https://github.com/mui-org/material-ui/issues/29518
+        // We are manualy preventing focusin event to be able to drag the TreeView item.
+        cy.get(
+          '#instrument-calls-tree-view [role=treeitem] [role=group] [role=treeitem]'
+        )
+          .first()
+          .realMouseDown()
+          .find('.MuiTreeItem-content')
+          .should('not.have.class', 'Mui-focused');
 
         cy.get(
           '#instrument-calls-tree-view [role=treeitem] [role=group] [role=treeitem]'
@@ -622,10 +621,7 @@ context('Proposal booking tests ', () => {
             instrumentIds: [existingInstrument.id],
           },
         });
-        cy.visit({
-          url: '/calendar',
-          timeout: 15000,
-        });
+        cy.visit('/calendar');
       });
       it('should be able to assign available equipments to time slot and show warning if some equipments are not accepted', () => {
         cy.createEvent({ input: createdUserOperationsEvent });
@@ -677,10 +673,7 @@ context('Proposal booking tests ', () => {
       it('Officer should be able to assign change equipment owner people', () => {
         cy.initializeSession('UserOfficer');
         let equipmentOwner: string;
-        cy.visit({
-          url: '/equipments',
-          timeout: 15000,
-        });
+        cy.visit('/equipments');
         cy.contains(existingEquipmentsData[0].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
@@ -701,10 +694,7 @@ context('Proposal booking tests ', () => {
       });
       it('Officer should be able to assign equipment responsible people', () => {
         cy.initializeSession('UserOfficer');
-        cy.visit({
-          url: '/equipments',
-          timeout: 15000,
-        });
+        cy.visit('/equipments');
         cy.contains(existingEquipmentsData[0].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
@@ -713,10 +703,7 @@ context('Proposal booking tests ', () => {
         cy.get('input[type="checkbox"]').first().click();
         cy.get('[data-cy="assign-selected-users"]').click();
         cy.get('[role=alert]').contains(/success/i);
-        cy.visit({
-          url: '/equipments',
-          timeout: 15000,
-        });
+        cy.visit('/equipments');
         cy.contains(existingEquipmentsData[1].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
@@ -760,10 +747,7 @@ context('Proposal booking tests ', () => {
           }
         });
 
-        cy.visit({
-          url: '/calendar',
-          timeout: 15000,
-        });
+        cy.visit('/calendar');
       });
 
       it('should not show already assigned equipments', () => {
@@ -803,10 +787,7 @@ context('Proposal booking tests ', () => {
           existingEquipmentsData[1].name
         );
 
-        cy.visit({
-          url: '/requests',
-          timeout: 15000,
-        });
+        cy.visit('/requests');
 
         cy.contains(existingEquipmentsData[0].name);
         cy.contains(existingEquipmentsData[1].name);
@@ -945,10 +926,7 @@ context('Proposal booking tests ', () => {
 
     describe('Review', () => {
       it('should request confirmation to activate proposal booking', () => {
-        cy.visit({
-          url: '/calendar',
-          timeout: 15000,
-        });
+        cy.visit('/calendar');
         cy.createEvent({ input: createdUserOperationsEvent });
         cy.finishedLoading();
         selectInstrument();
@@ -982,10 +960,7 @@ context('Proposal booking tests ', () => {
             });
           }
         });
-        cy.visit({
-          url: '/calendar',
-          timeout: 15000,
-        });
+        cy.visit('/calendar');
       });
 
       it('should be able to log lost time', () => {
@@ -1202,10 +1177,7 @@ context('Proposal booking tests ', () => {
             action: ProposalBookingFinalizeAction.COMPLETE,
           },
         });
-        cy.visit({
-          url: '/calendar',
-          timeout: 15000,
-        });
+        cy.visit('/calendar');
         cy.finishedLoading();
 
         selectInstrument();
@@ -1254,10 +1226,7 @@ context('Proposal booking tests ', () => {
         });
         cy.initializeSession('InstrumentScientist_1');
 
-        cy.visit({
-          url: '/calendar',
-          timeout: 15000,
-        });
+        cy.visit('/calendar');
 
         cy.finishedLoading();
         selectInstrument();
@@ -1279,10 +1248,7 @@ context('Proposal booking tests ', () => {
         });
         cy.initializeSession('UserOfficer');
 
-        cy.visit({
-          url: '/calendar',
-          timeout: 15000,
-        });
+        cy.visit('/calendar');
 
         cy.finishedLoading();
         selectInstrument(existingInstruments[0].name);
