@@ -262,7 +262,10 @@ export default function ProposalDetailsAndBookingEvents({
 
     // Delete selected events
     const {
-      deleteScheduledEvents: { error },
+      deleteScheduledEvents: {
+        error,
+        scheduledEvents: [deletedScheduledEvent],
+      },
     } = await api().deleteScheduledEvents({
       input: {
         ids: [event.id],
@@ -275,8 +278,13 @@ export default function ProposalDetailsAndBookingEvents({
       enqueueSnackbar(getTranslation(error as ResourceId), {
         variant: 'error',
       });
-
-      throw error;
+    } else if ('reason' in deletedScheduledEvent) {
+      enqueueSnackbar(
+        getTranslation(deletedScheduledEvent.reason as ResourceId),
+        {
+          variant: 'error',
+        }
+      );
     } else {
       enqueueSnackbar('Time slot deleted successfully', {
         variant: 'success',
@@ -454,12 +462,12 @@ export default function ProposalDetailsAndBookingEvents({
         align="left"
         className={classes.timeSlotsTitle}
       >
-        Experiment time{' '}
+        Experiment times{' '}
         {hasEventOutsideCallCycleInterval && (
           <Tooltip
             title="Some of the experiment times are booked outside of the call cycle start and end
           date."
-            data-cy="some-event-outside-cycle-interval-warning"
+            data-cy="some-experiment-time-outside-cycle-interval-warning"
           >
             <WarningOutlined style={{ color: theme.palette.warning.main }} />
           </Tooltip>

@@ -11,10 +11,7 @@ context('Scheduled events table tests', () => {
     cy.resetDB(true);
     cy.resetSchedulerDB(true);
     cy.initializeSession('InstrumentScientist_1');
-    cy.visit({
-      url: '/calendar',
-      timeout: 15000,
-    });
+    cy.visit('/calendar');
   });
 
   describe('Scheduled events table', () => {
@@ -40,12 +37,20 @@ context('Scheduled events table tests', () => {
       description: 'Test maintenance event',
     };
 
-    const newScheduledUserOperationsEvent = {
+    const newScheduledUserOperationsEvent1 = {
       instrumentId: 1,
       proposalBookingId: 1,
       bookingType: ScheduledEventBookingType.USER_OPERATIONS,
       startsAt: defaultEventBookingHourDateTime,
       endsAt: getHourDateTimeAfter(24),
+    };
+
+    const newScheduledUserOperationsEvent2 = {
+      instrumentId: 1,
+      proposalBookingId: 1,
+      bookingType: ScheduledEventBookingType.USER_OPERATIONS,
+      startsAt: getHourDateTimeAfter(25),
+      endsAt: getHourDateTimeAfter(48),
     };
 
     it('should be able to switch between scheduled events table view and calendar view', () => {
@@ -70,7 +75,7 @@ context('Scheduled events table tests', () => {
       cy.finishedLoading();
       openProposalBookingFromRightToolbar();
 
-      cy.get('[data-cy="add-new-timeslot"]').click();
+      cy.get('[data-cy="add-new-experiment-time"]').click();
       cy.finishedLoading();
 
       cy.contains(defaultEventBookingHourDateTime);
@@ -105,7 +110,7 @@ context('Scheduled events table tests', () => {
       cy.finishedLoading();
       cy.createEvent({ input: newScheduledEvent1 });
       cy.createEvent({ input: newScheduledEvent2 });
-      cy.createEvent({ input: newScheduledUserOperationsEvent });
+      cy.createEvent({ input: newScheduledUserOperationsEvent1 });
 
       selectInstrument();
 
@@ -143,7 +148,7 @@ context('Scheduled events table tests', () => {
     it('should be able to use table navigation to filter events the same way as calendar navigation', () => {
       cy.createEvent({ input: newScheduledEvent1 });
       cy.createEvent({ input: newScheduledEvent3 });
-      cy.createEvent({ input: newScheduledUserOperationsEvent });
+      cy.createEvent({ input: newScheduledUserOperationsEvent1 });
       cy.finishedLoading();
 
       selectInstrument();
@@ -194,7 +199,7 @@ context('Scheduled events table tests', () => {
 
     it('should be able to click and open events in table view', () => {
       cy.createEvent({ input: newScheduledEvent1 });
-      cy.createEvent({ input: newScheduledUserOperationsEvent });
+      cy.createEvent({ input: newScheduledUserOperationsEvent1 });
       cy.finishedLoading();
 
       selectInstrument();
@@ -219,18 +224,90 @@ context('Scheduled events table tests', () => {
         .find('[data-testid="VisibilityIcon"]')
         .click();
 
-      cy.get('[role="presentation"] [data-cy="btn-save"]').should('exist');
+      cy.get('[role="presentation"] [data-cy="delete-experiment-time"]').should(
+        'exist'
+      );
       cy.get(
-        '[role="presentation"] [data-cy="activate-time-slot-booking"]'
+        '[role="presentation"] [data-cy="activate-experiment-time"]'
       ).should('exist');
       cy.contains(
-        `${newScheduledUserOperationsEvent.startsAt} - ${newScheduledUserOperationsEvent.endsAt}`
+        `${newScheduledUserOperationsEvent1.startsAt} - ${newScheduledUserOperationsEvent1.endsAt}`
       );
+    });
+
+    it('should be able to bulk activate events in table view', () => {
+      cy.createEvent({ input: newScheduledEvent1 });
+      cy.createEvent({ input: newScheduledUserOperationsEvent1 });
+      cy.createEvent({ input: newScheduledUserOperationsEvent2 });
+      cy.finishedLoading();
+
+      selectInstrument();
+
+      cy.finishedLoading();
+
+      cy.get('[data-cy="scheduler-active-view"]').click();
+      cy.get('[data-value="Table"]').click();
+
+      cy.get(
+        '[data-cy="scheduled-events-table"] [data-cy="select-all-table-rows"]'
+      ).click();
+
+      cy.contains('3 row(s) selected');
+
+      cy.get('[aria-label="Activate selected experiment times"]').click();
+
+      cy.get(
+        '[role="presentation"] [id="confirmation-dialog-description"]'
+      ).should(
+        'contain.text',
+        'Are you sure you want to activate selected experiment times'
+      );
+
+      cy.get('[role="presentation"] .MuiAlert-message').should(
+        'contain.text',
+        'You have selected some events that are not ready for activation. Only DRAFT events that are of type USER OPERATIONS with all equipment bookings accepted will be activated'
+      );
+
+      cy.get('[data-cy="btn-cancel"]').click();
+
+      cy.contains(newScheduledEvent1.description)
+        .parent()
+        .find('input[type="checkbox"]')
+        .click();
+
+      cy.contains('2 row(s) selected');
+
+      cy.get('[aria-label="Activate selected experiment times"]').click();
+
+      cy.get(
+        '[role="presentation"] [id="confirmation-dialog-description"]'
+      ).should(
+        'contain.text',
+        'Are you sure you want to activate selected experiment times'
+      );
+
+      cy.get('[role="presentation"] .MuiAlert-message').should('not.exist');
+
+      cy.get('[data-cy="btn-ok"]').click();
+
+      cy.finishedLoading();
+
+      cy.get('#notistack-snackbar').should(
+        'contain.text',
+        'Experiment times activated successfully'
+      );
+
+      cy.contains(newScheduledUserOperationsEvent1.endsAt)
+        .parent()
+        .should('contain.text', 'Active');
+      cy.contains(newScheduledUserOperationsEvent2.endsAt)
+        .parent()
+        .should('contain.text', 'Active');
     });
 
     it('should not reset dates if instrument is changed in filters', () => {
       cy.createEvent({ input: newScheduledEvent3 });
-      cy.createEvent({ input: newScheduledUserOperationsEvent });
+      cy.createEvent({ input: newScheduledUserOperationsEvent1 });
       cy.initializeSession('UserOfficer');
       cy.finishedLoading();
 
@@ -243,7 +320,7 @@ context('Scheduled events table tests', () => {
         'not.contain',
         newScheduledEvent3.startsAt
       );
-      cy.contains(newScheduledUserOperationsEvent.startsAt);
+      cy.contains(newScheduledUserOperationsEvent1.startsAt);
 
       cy.get('.rbc-toolbar button')
         .contains('next', { matchCase: false })
@@ -254,7 +331,7 @@ context('Scheduled events table tests', () => {
       cy.contains(newScheduledEvent3.startsAt);
       cy.get('[data-cy="scheduled-events-table"]').should(
         'not.contain',
-        newScheduledUserOperationsEvent.startsAt
+        newScheduledUserOperationsEvent1.startsAt
       );
 
       cy.reload();
@@ -266,7 +343,7 @@ context('Scheduled events table tests', () => {
       cy.contains(newScheduledEvent3.startsAt);
       cy.get('[data-cy="scheduled-events-table"]').should(
         'not.contain',
-        newScheduledUserOperationsEvent.startsAt
+        newScheduledUserOperationsEvent1.startsAt
       );
     });
   });
