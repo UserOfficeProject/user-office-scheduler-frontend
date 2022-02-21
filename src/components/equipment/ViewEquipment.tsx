@@ -196,10 +196,10 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
 
         success &&
           setRows(
-            rows.map(({ ...rest }) => ({
-              ...rest,
+            rows.map((item) => ({
+              ...item,
               equipmentAssignmentStatus:
-                rest.id === row.id ? newStatus : rest.equipmentAssignmentStatus,
+                item.id === row.id ? newStatus : item.equipmentAssignmentStatus,
             }))
           );
 
