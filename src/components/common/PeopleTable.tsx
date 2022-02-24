@@ -8,10 +8,14 @@ import { tableIcons } from 'components/common/TableIcons';
 import { BasicUserDetailsFragment, getSdk, UserRole } from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
 
+type BasicUserDetailsFragmentWithTableData = BasicUserDetailsFragment & {
+  tableData?: {
+    checked: boolean;
+  };
+};
+
 async function sendUserRequest(
-  searchQuery: Query<
-    BasicUserDetailsFragment & { tableData: { checked: boolean } }
-  >,
+  searchQuery: Query<BasicUserDetailsFragmentWithTableData>,
   api: () => ReturnType<typeof getSdk>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>,
   subtractedUsers: number[] | undefined | null,
@@ -33,17 +37,19 @@ async function sendUserRequest(
 
   return {
     page: searchQuery.page,
-    totalCount: data?.users?.totalCount,
-    data: data?.users?.users.map((user) => {
-      return {
-        id: user.id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        organisation: user.organisation,
-        position: user.position,
-        tableData: { checked: selectedParticipants.includes(user.id) },
-      };
-    }),
+    totalCount: data?.users?.totalCount || 0,
+    data:
+      data?.users?.users.map((user) => {
+        return {
+          id: user.id,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          organisation: user.organisation,
+          position: user.position,
+          placeholder: user.placeholder,
+          tableData: { checked: selectedParticipants.includes(user.id) },
+        };
+      }) || [],
   };
 }
 
@@ -66,7 +72,7 @@ type PeopleTableProps<
   selectedUsers?: T[] | null;
   showSelectedUsers?: boolean;
   mtOptions?: Options<T>;
-  columns?: Column<T & { tableData: { checked: boolean } }>[];
+  columns?: Column<BasicUserDetailsFragmentWithTableData>[];
   userRole?: UserRole;
 };
 
@@ -143,18 +149,8 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
     });
 
   const tableData = data
-    ? (data as (BasicUserDetailsFragment & {
-        tableData: { checked: boolean };
-      })[])
-    : (
-        query: Query<
-          BasicUserDetailsFragment & {
-            tableData: {
-              checked: boolean;
-            };
-          }
-        >
-      ) => {
+    ? (data as BasicUserDetailsFragmentWithTableData[])
+    : (query: Query<BasicUserDetailsFragmentWithTableData>) => {
         if (searchText !== query.search) {
           setSearchText(query.search);
         }
@@ -175,11 +171,17 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
           subtractedUsers,
           alreadySelectedParticipants,
           userRole || null
-        ).then((users: any) => {
-          setCurrentPageIds(users.data.map(({ id }: { id: number }) => id));
+        ).then(
+          (users: {
+            page: number;
+            totalCount: number;
+            data: BasicUserDetailsFragmentWithTableData[];
+          }) => {
+            setCurrentPageIds(users.data.map(({ id }: { id: number }) => id));
 
-          return users;
-        });
+            return users;
+          }
+        );
       };
 
   return (
@@ -217,7 +219,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
           }
 
           setSelectedParticipants((selectedParticipants) =>
-            selectedItem.tableData.checked
+            selectedItem.tableData?.checked
               ? ([
                   ...selectedParticipants,
                   {
