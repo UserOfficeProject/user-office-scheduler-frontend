@@ -253,9 +253,6 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
                 >
                   Edit equipment
                 </Button>
-                {/* <IconButton data-cy="btn-edit-equipment">
-                  <EditIcon />
-                </IconButton> */}
               </Link>
             </Box>
 

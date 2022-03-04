@@ -13,7 +13,6 @@ function PeopleModal(props: {
   close: () => void;
   selection?: boolean;
   selectedUsers?: BasicUserDetailsFragment[] | null;
-  showSelectedUsers?: boolean;
   userRole?: UserRole;
   data?: BasicUserDetailsFragment[];
 }) {
@@ -48,7 +47,6 @@ function PeopleModal(props: {
             actionIcon: <AddBox data-cy="select-user" />,
           }}
           selectedUsers={props.selectedUsers}
-          showSelectedUsers={props.showSelectedUsers}
           selection={!!props.selection}
           userRole={props.userRole}
           onUpdate={props.addParticipants}

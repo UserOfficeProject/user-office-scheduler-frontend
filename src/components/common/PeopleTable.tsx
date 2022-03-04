@@ -70,7 +70,6 @@ type PeopleTableProps<
   onRemove?: (item: T) => void;
   onUpdate?: (item: T[]) => void;
   selectedUsers?: T[] | null;
-  showSelectedUsers?: boolean;
   mtOptions?: Options<T>;
   columns?: Column<BasicUserDetailsFragmentWithTableData>[];
   userRole?: UserRole;
@@ -106,7 +105,6 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
   isFreeAction,
   mtOptions,
   selectedUsers,
-  showSelectedUsers = false,
   userRole,
   title,
 }) => {
@@ -115,7 +113,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
   const [pageSize, setPageSize] = useState(5);
   const [selectedParticipants, setSelectedParticipants] = useState<
     BasicUserDetailsFragment[]
-  >(showSelectedUsers ? selectedUsers || [] : []);
+  >(selectedUsers ? selectedUsers : []);
   const [searchText, setSearchText] = useState('');
   const [currentPageIds, setCurrentPageIds] = useState<number[]>([]);
 
@@ -148,8 +146,13 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
       ) => action.fn(rowData as BasicUserDetailsFragment),
     });
 
-  const tableData = data
-    ? (data as BasicUserDetailsFragmentWithTableData[])
+  const selectedUserIds = selectedUsers?.map((user) => user.id);
+  const dataWithoutSelectedUsers = data?.filter((item) =>
+    selectedUserIds?.find((selectedUserId) => selectedUserId !== item.id)
+  );
+
+  const tableData = dataWithoutSelectedUsers
+    ? dataWithoutSelectedUsers
     : (query: Query<BasicUserDetailsFragmentWithTableData>) => {
         if (searchText !== query.search) {
           setSearchText(query.search);
@@ -157,18 +160,15 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
 
         setPageSize(query.pageSize);
 
-        const subtractedUsers = showSelectedUsers
-          ? null
-          : selectedUsers?.map((user) => user.id);
-        const alreadySelectedParticipants = showSelectedUsers
-          ? selectedUsers?.map((user) => user.id) || []
-          : selectedParticipants.map(({ id }) => id);
+        const alreadySelectedParticipants = selectedParticipants.map(
+          ({ id }) => id
+        );
 
         return sendUserRequest(
           query,
           api,
           setLoading,
-          subtractedUsers,
+          selectedUserIds,
           alreadySelectedParticipants,
           userRole || null
         ).then(
@@ -269,7 +269,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
                 setSelectedParticipants([]);
               }
             }}
-            disabled={!showSelectedUsers && selectedParticipants.length === 0}
+            disabled={selectedParticipants.length === 0}
             data-cy="assign-selected-users"
           >
             Update
