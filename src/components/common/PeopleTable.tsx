@@ -147,9 +147,9 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
     });
 
   const selectedUserIds = selectedUsers?.map((user) => user.id);
-  const dataWithoutSelectedUsers = data?.filter((item) =>
-    selectedUserIds?.find((selectedUserId) => selectedUserId !== item.id)
-  );
+  const dataWithoutSelectedUsers = selectedUserIds?.length
+    ? data?.filter(({ id }) => !selectedUserIds.includes(id))
+    : data;
 
   const tableData = dataWithoutSelectedUsers
     ? dataWithoutSelectedUsers
