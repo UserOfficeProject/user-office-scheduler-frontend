@@ -7,7 +7,6 @@ import {
   Assignment as AssignmentIcon,
   Check as CheckIcon,
   Clear as ClearIcon,
-  PersonAdd as PersonAddIcon,
   Group as GroupIcon,
 } from '@mui/icons-material';
 import {
@@ -17,9 +16,8 @@ import {
   ListItemAvatar,
   Avatar,
   ListItemText,
-  IconButton,
+  Button,
   Box,
-  Tooltip,
 } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import moment, { Moment } from 'moment';
@@ -30,17 +28,11 @@ import { Link } from 'react-router-dom';
 
 import ScienceIcon from 'components/common/icons/ScienceIcon';
 import Loader from 'components/common/Loader';
-import PeopleModal from 'components/common/PeopleModal';
 import { tableIcons } from 'components/common/TableIcons';
 import { PATH_EDIT_EQUIPMENT } from 'components/paths';
 import { AppContext } from 'context/AppContext';
 import { UserContext } from 'context/UserContext';
-import {
-  BasicUserDetails,
-  EquipmentAssignmentStatus,
-  User,
-  UserRole,
-} from 'generated/sdk';
+import { EquipmentAssignmentStatus, UserRole } from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
 import useEquipment from 'hooks/equipment/useEquipment';
 import useEquipmentScheduledEvents from 'hooks/scheduledEvent/useEquipmentScheduledEvents';
@@ -83,6 +75,9 @@ const useStyles = makeStyles((theme) => ({
   },
   listItemText: {
     maxWidth: 'fit-content',
+  },
+  linkTextDecoration: {
+    textDecoration: 'none',
   },
 }));
 
@@ -133,31 +128,14 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
   const { id } = useParams<{ id?: string }>();
   const finalEquipmentId = id ? parseInt(id) : equipmentId;
   const classes = useStyles();
-  const {
-    loading: equipmentLoading,
-    equipment,
-    setEquipment,
-  } = useEquipment(finalEquipmentId);
-  const [selectedUsers, setSelectedUsers] = useState<
-    Pick<User, 'id' | 'firstname' | 'lastname'>[]
-  >([]);
-  const [showPeopleModal, setShowPeopleModal] = useState(false);
-  const [
-    showEquipmentOwnerSelectionModal,
-    setShowEquipmentOwnerSelectionModal,
-  ] = useState(false);
+  const { loading: equipmentLoading, equipment } =
+    useEquipment(finalEquipmentId);
   const { loading: scheduledEventsLoading, scheduledEvents } =
     useEquipmentScheduledEvents({
       equipmentIds: [finalEquipmentId],
       startsAt: toTzLessDateTime(moment(new Date()).startOf('day')),
       endsAt: toTzLessDateTime(moment(new Date()).add(1, 'year').endOf('day')),
     });
-  const equipmentResponsiblePeople = equipment?.equipmentResponsible;
-  useEffect(() => {
-    if (equipmentResponsiblePeople) {
-      setSelectedUsers(equipmentResponsiblePeople);
-    }
-  }, [equipmentResponsiblePeople]);
   const api = useDataApi();
   const [rows, setRows] = useState<TableRow[]>([]);
   const [confirmationLoading, setConfirmationLoading] = useState(false);
@@ -229,10 +207,10 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
 
         isSuccess &&
           setRows(
-            rows.map(({ ...rest }) => ({
-              ...rest,
+            rows.map((item) => ({
+              ...item,
               equipmentAssignmentStatus:
-                rest.id === row.id ? newStatus : rest.equipmentAssignmentStatus,
+                item.id === row.id ? newStatus : item.equipmentAssignmentStatus,
             }))
           );
 
@@ -251,42 +229,6 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
     return <div>Equipment ID not found!</div>;
   }
 
-  const addEquipmentResponsibleUsers = async (users: BasicUserDetails[]) => {
-    const response = await api().addEquipmentResponsible({
-      equipmentResponsibleInput: {
-        equipmentId: equipment.id,
-        userIds: users.map((user) => user.id),
-      },
-    });
-
-    if (response.addEquipmentResponsible) {
-      enqueueSnackbar('Success', { variant: 'success' });
-
-      setSelectedUsers([...selectedUsers, ...users]);
-
-      setShowPeopleModal(false);
-    }
-  };
-
-  const updateEquipmentOwner = async ([user]: BasicUserDetails[]) => {
-    const response = await api().updateEquipmentOwner({
-      updateEquipmentOwnerInput: {
-        equipmentId: equipment.id,
-        userId: user.id,
-      },
-    });
-
-    if (response.updateEquipmentOwner) {
-      enqueueSnackbar('Success', { variant: 'success' });
-
-      setEquipment({ ...equipment, owner: user });
-
-      setShowEquipmentOwnerSelectionModal(false);
-    } else {
-      enqueueSnackbar('Error', { variant: 'error' });
-    }
-  };
-
   const CheckIconComponent = (
     props: JSX.IntrinsicAttributes & {
       children?: React.ReactNode;
@@ -302,23 +244,6 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
 
   return (
     <StyledContainer maxWidth={false}>
-      <PeopleModal
-        show={showPeopleModal}
-        close={() => setShowPeopleModal(false)}
-        addParticipants={addEquipmentResponsibleUsers}
-        selectedUsers={selectedUsers.map((selectedUser) => selectedUser.id)}
-        selection={true}
-        title={'Select responsible people'}
-        userRole={UserRole.INSTRUMENT_SCIENTIST}
-      />
-      <PeopleModal
-        show={showEquipmentOwnerSelectionModal}
-        close={() => setShowEquipmentOwnerSelectionModal(false)}
-        addParticipants={updateEquipmentOwner}
-        selectedUsers={equipment.owner ? [equipment.owner.id] : []}
-        title={'Select equipment owner'}
-        userRole={UserRole.INSTRUMENT_SCIENTIST}
-      />
       <Grid container>
         <Grid item xs={12}>
           <StyledPaper margin={[0, 1]}>
@@ -330,10 +255,16 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
                   to={generatePath(PATH_EDIT_EQUIPMENT, {
                     id: pathEquipmentId,
                   })}
+                  className={classes.linkTextDecoration}
                 >
-                  <IconButton data-cy="btn-edit-equipment">
-                    <EditIcon />
-                  </IconButton>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    data-cy="btn-edit-equipment"
+                    startIcon={<EditIcon />}
+                  >
+                    Edit equipment
+                  </Button>
                 </Link>
               </Box>
             )}
@@ -360,19 +291,11 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
                       secondary={getFullUserName(equipment.owner)}
                       className={classes.listItemText}
                     />
-                    <Tooltip title="Change equipment owner">
-                      <IconButton
-                        onClick={() =>
-                          setShowEquipmentOwnerSelectionModal(true)
-                        }
-                        data-cy="change-equipment-owner"
-                        aria-label="Change equipment owner"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
                   </ListItem>
-                  <ListItem disableGutters>
+                  <ListItem
+                    disableGutters
+                    data-cy="equipment-responsible-people"
+                  >
                     <ListItemAvatar>
                       <Avatar>
                         <GroupIcon />
@@ -380,21 +303,12 @@ export default function ViewEquipment({ equipmentId }: ViewEquipmentProps) {
                     </ListItemAvatar>
                     <ListItemText
                       primary="Responsible people"
-                      secondary={selectedUsers.map(
+                      secondary={equipment.equipmentResponsible.map(
                         (user, index) =>
                           `${index ? ', ' : ''} ${getFullUserName(user)}`
                       )}
                       className={classes.listItemText}
                     />
-                    <Tooltip title="Add equipment responsible">
-                      <IconButton
-                        onClick={() => setShowPeopleModal(true)}
-                        data-cy="add-equipment-responsible"
-                        aria-label="Add equipment responsible"
-                      >
-                        <PersonAddIcon />
-                      </IconButton>
-                    </Tooltip>
                   </ListItem>
                   <ListItem disableGutters>
                     <ListItemAvatar>

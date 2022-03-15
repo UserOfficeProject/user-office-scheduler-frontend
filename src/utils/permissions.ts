@@ -1,9 +1,8 @@
 import { AuthenticatedUser } from 'context/UserContext';
-import { UserRole } from 'generated/sdk';
-import { DetailedEquipment } from 'hooks/equipment/useEquipment';
+import { GetEquipmentQuery, UserRole } from 'generated/sdk';
 
 export const isEquipmentResponsiblePerson = (
-  equipment: DetailedEquipment | null,
+  equipment: GetEquipmentQuery['equipment'] | null,
   loggedInUser?: AuthenticatedUser | null,
   loggedInUserCurrentRole?: UserRole | null
 ) =>
@@ -13,6 +12,6 @@ export const isEquipmentResponsiblePerson = (
   );
 
 export const isEquipmentOwner = (
-  equipment: DetailedEquipment | null,
+  equipment: GetEquipmentQuery['equipment'] | null,
   loggedInUser?: AuthenticatedUser | null
 ) => equipment?.owner?.id === loggedInUser?.id;

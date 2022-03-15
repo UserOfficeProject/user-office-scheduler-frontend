@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import MaterialTable, { Query, Options, Column } from '@material-table/core';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
@@ -6,14 +5,20 @@ import React, { useState, useEffect } from 'react';
 
 import { ActionButtonContainer } from 'components/common/ActionButtonContainer';
 import { tableIcons } from 'components/common/TableIcons';
-import { BasicUserDetails, UserRole } from 'generated/sdk';
+import { BasicUserDetailsFragment, getSdk, UserRole } from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
 
-function sendUserRequest(
-  searchQuery: Query<any>,
-  api: any,
+type BasicUserDetailsFragmentWithTableData = BasicUserDetailsFragment & {
+  tableData?: {
+    checked: boolean;
+  };
+};
+
+async function sendUserRequest(
+  searchQuery: Query<BasicUserDetailsFragmentWithTableData>,
+  api: () => ReturnType<typeof getSdk>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  selectedUsers: number[] | undefined | null,
+  subtractedUsers: number[] | undefined | null,
   selectedParticipants: number[],
   userRole: UserRole | null
 ) {
@@ -21,50 +26,52 @@ function sendUserRequest(
     filter: searchQuery.search,
     offset: searchQuery.pageSize * searchQuery.page,
     first: searchQuery.pageSize,
-    subtractUsers: selectedUsers ? selectedUsers : [],
+    subtractUsers: subtractedUsers ? subtractedUsers : [],
     userRole: userRole,
   };
 
   setLoading(true);
 
-  return api()
-    .getUsers(variables)
-    .then((data: any) => {
-      setLoading(false);
+  const data = await api().getUsers(variables);
+  setLoading(false);
 
-      return {
-        page: searchQuery.page,
-        totalCount: data?.users?.totalCount,
-        data: data?.users?.users.map((user: BasicUserDetails) => {
-          return {
-            firstname: user.firstname,
-            lastname: user.lastname,
-            organisation: user.organisation,
-            id: user.id,
-            tableData: { checked: selectedParticipants.includes(user.id) },
-          };
-        }),
-      };
-    });
+  return {
+    page: searchQuery.page,
+    totalCount: data?.users?.totalCount || 0,
+    data:
+      data?.users?.users.map((user) => {
+        return {
+          id: user.id,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          organisation: user.organisation,
+          position: user.position,
+          placeholder: user.placeholder,
+          tableData: { checked: selectedParticipants.includes(user.id) },
+        };
+      }) || [],
+  };
 }
 
-type PeopleTableProps<T extends BasicUserDetails = BasicUserDetails> = {
+type PeopleTableProps<
+  T extends BasicUserDetailsFragment = BasicUserDetailsFragment
+> = {
   selection: boolean;
   isLoading?: boolean;
   title?: string;
   action?: {
-    fn: (data: any) => void;
+    fn: (data: T) => void;
     actionIcon: JSX.Element;
     actionText: string;
   };
   isFreeAction?: boolean;
   data?: T[];
   search?: boolean;
-  onRemove?: (item: any) => void;
-  onUpdate?: (item: any[]) => void;
-  selectedUsers?: number[] | null;
-  mtOptions?: Options<BasicUserDetails>;
-  columns?: Column<any>[];
+  onRemove?: (item: T) => void;
+  onUpdate?: (item: T[]) => void;
+  selectedUsers?: T[] | null;
+  mtOptions?: Options<T>;
+  columns?: Column<BasicUserDetailsFragmentWithTableData>[];
   userRole?: UserRole;
 };
 
@@ -105,8 +112,8 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
   const [loading, setLoading] = useState(isLoading);
   const [pageSize, setPageSize] = useState(5);
   const [selectedParticipants, setSelectedParticipants] = useState<
-    BasicUserDetails[]
-  >([]);
+    BasicUserDetailsFragment[]
+  >(selectedUsers ? selectedUsers : []);
   const [searchText, setSearchText] = useState('');
   const [currentPageIds, setCurrentPageIds] = useState<number[]>([]);
 
@@ -135,41 +142,46 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
       tooltip: action.actionText,
       onClick: (
         event: React.MouseEvent<JSX.Element>,
-        rowData: BasicUserDetails | BasicUserDetails[]
-      ) => action.fn(rowData),
+        rowData: BasicUserDetailsFragment | BasicUserDetailsFragment[]
+      ) => action.fn(rowData as BasicUserDetailsFragment),
     });
 
-  const tableData = data
-    ? (data as (BasicUserDetails & {
-        tableData: { checked: boolean };
-      })[])
-    : (
-        query: Query<
-          BasicUserDetails & {
-            tableData: {
-              checked: boolean;
-            };
-          }
-        >
-      ) => {
+  const selectedUserIds = selectedUsers?.map((user) => user.id);
+  const dataWithoutSelectedUsers = selectedUserIds?.length
+    ? data?.filter(({ id }) => !selectedUserIds.includes(id))
+    : data;
+
+  const tableData = dataWithoutSelectedUsers
+    ? dataWithoutSelectedUsers
+    : (query: Query<BasicUserDetailsFragmentWithTableData>) => {
         if (searchText !== query.search) {
           setSearchText(query.search);
         }
 
         setPageSize(query.pageSize);
 
+        const alreadySelectedParticipants = selectedParticipants.map(
+          ({ id }) => id
+        );
+
         return sendUserRequest(
           query,
           api,
           setLoading,
-          selectedUsers,
-          selectedParticipants.map(({ id }) => id),
+          selectedUserIds,
+          alreadySelectedParticipants,
           userRole || null
-        ).then((users: any) => {
-          setCurrentPageIds(users.data.map(({ id }: { id: number }) => id));
+        ).then(
+          (users: {
+            page: number;
+            totalCount: number;
+            data: BasicUserDetailsFragmentWithTableData[];
+          }) => {
+            setCurrentPageIds(users.data.map(({ id }: { id: number }) => id));
 
-          return users;
-        });
+            return users;
+          }
+        );
       };
 
   return (
@@ -199,7 +211,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
                   firstname: selectedItem.firstname,
                   lastname: selectedItem.lastname,
                   organisation: selectedItem.organisation,
-                })) as BasicUserDetails[]),
+                })) as BasicUserDetailsFragment[]),
               ]);
             }
 
@@ -207,7 +219,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
           }
 
           setSelectedParticipants((selectedParticipants) =>
-            selectedItem.tableData.checked
+            selectedItem.tableData?.checked
               ? ([
                   ...selectedParticipants,
                   {
@@ -216,7 +228,7 @@ const PeopleTable: React.FC<PeopleTableProps> = ({
                     lastname: selectedItem.lastname,
                     organisation: selectedItem.organisation,
                   },
-                ] as BasicUserDetails[])
+                ] as BasicUserDetailsFragment[])
               : selectedParticipants.filter(({ id }) => id !== selectedItem.id)
           );
         }}

@@ -5,6 +5,7 @@ import {
   HourglassFull as HourglassFullIcon,
   HourglassEmpty as HourglassEmptyIcon,
   Description as DescriptionIcon,
+  Circle as CircleIcon,
   Person,
   WarningOutlined,
   Info,
@@ -19,6 +20,7 @@ import {
   useTheme,
   Tooltip,
   Typography,
+  alpha,
 } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -47,9 +49,11 @@ import {
   ScheduledEventBookingType,
 } from 'generated/sdk';
 import { useDataApi } from 'hooks/common/useDataApi';
-import { InstrumentProposalBooking } from 'hooks/proposalBooking/useInstrumentProposalBookings';
+import {
+  DetailedProposalBooking,
+  DetailedProposalBookingScheduledEvent,
+} from 'hooks/proposalBooking/useProposalBooking';
 import { ProposalBookingScheduledEvent } from 'hooks/scheduledEvent/useProposalBookingScheduledEvents';
-import { ScheduledEventWithEquipments } from 'hooks/scheduledEvent/useScheduledEventWithEquipment';
 import { toTzLessDateTime, TZ_LESS_DATE_TIME_FORMAT } from 'utils/date';
 import { getFullUserName } from 'utils/user';
 
@@ -97,6 +101,16 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: 'unset !important',
       padding: 0,
     },
+
+    '& .MuiTab-root.Mui-selected': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.2),
+    },
+  },
+  experimentTimeStatusIndicator: {
+    position: 'absolute',
+    width: theme.spacing(1.5),
+    left: theme.spacing(1),
+    top: 0,
   },
 }));
 
@@ -125,10 +139,8 @@ const checkIfSomeScheduledEventIsOutsideCallCycleInterval = (
 };
 
 export type ProposalDetailsAndBookingEventsProps = {
-  proposalBooking: InstrumentProposalBooking;
-  setProposalBooking: Dispatch<
-    SetStateAction<InstrumentProposalBooking | null>
-  >;
+  proposalBooking: DetailedProposalBooking;
+  setProposalBooking: Dispatch<SetStateAction<DetailedProposalBooking>>;
   openedEventId?: number;
 };
 
@@ -255,14 +267,17 @@ export default function ProposalDetailsAndBookingEvents({
     }
   };
 
-  const handleDelete = async (event: ScheduledEventWithEquipments) => {
+  const handleDelete = async (event: DetailedProposalBookingScheduledEvent) => {
     if (!instrument) {
       return;
     }
 
     // Delete selected events
     const {
-      deleteScheduledEvents: { error },
+      deleteScheduledEvents: {
+        error,
+        scheduledEvents: [deletedScheduledEvent],
+      },
     } = await api().deleteScheduledEvents({
       input: {
         ids: [event.id],
@@ -275,8 +290,13 @@ export default function ProposalDetailsAndBookingEvents({
       enqueueSnackbar(getTranslation(error as ResourceId), {
         variant: 'error',
       });
-
-      throw error;
+    } else if ('reason' in deletedScheduledEvent) {
+      enqueueSnackbar(
+        getTranslation(deletedScheduledEvent.reason as ResourceId),
+        {
+          variant: 'error',
+        }
+      );
     } else {
       enqueueSnackbar('Time slot deleted successfully', {
         variant: 'success',
@@ -289,6 +309,47 @@ export default function ProposalDetailsAndBookingEvents({
       setSelectedTab(newEvents.length ? newEvents.length - 1 : 0);
 
       setProposalBooking({ ...proposalBooking, scheduledEvents: newEvents });
+    }
+  };
+
+  const getIconColorBasedOnStatus = (
+    event: DetailedProposalBookingScheduledEvent
+  ): 'primary' | 'disabled' | 'action' | 'warning' => {
+    if (
+      checkIfSomeScheduledEventIsOutsideCallCycleInterval(
+        [event],
+        startCycle,
+        endCycle
+      )
+    ) {
+      return 'warning';
+    }
+
+    switch (event.status) {
+      case ProposalBookingStatusCore.ACTIVE:
+        return 'primary';
+
+      case ProposalBookingStatusCore.COMPLETED:
+        return 'disabled';
+
+      default:
+        return 'action';
+    }
+  };
+
+  const getItemTooltipTitle = (
+    event: DetailedProposalBookingScheduledEvent
+  ) => {
+    if (
+      checkIfSomeScheduledEventIsOutsideCallCycleInterval(
+        [event],
+        startCycle,
+        endCycle
+      )
+    ) {
+      return 'Experiment time booked outside call cycle start and end date';
+    } else {
+      return event.status;
     }
   };
 
@@ -468,9 +529,18 @@ export default function ProposalDetailsAndBookingEvents({
 
       <SimpleTabs
         tab={selectedTab}
-        tabNames={scheduledEvents.map(
-          (item) => `${item.startsAt} - ${item.endsAt}`
-        )}
+        tabNames={scheduledEvents.map((item) => (
+          <>
+            <Tooltip title={getItemTooltipTitle(item)}>
+              <CircleIcon
+                className={classes.experimentTimeStatusIndicator}
+                color={getIconColorBasedOnStatus(item)}
+                data-cy="status-indicator"
+              />
+            </Tooltip>
+            {`${item.startsAt} - ${item.endsAt}`}
+          </>
+        ))}
         orientation="vertical"
         handleAdd={!isProposalBookingCompleted ? handleAdd : undefined}
         noItemsText="No records to display. Start by adding new experiment time"

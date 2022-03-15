@@ -6,10 +6,12 @@ import {
   DialogTitle,
 } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 
 import Loader from 'components/common/Loader';
-import useProposalBooking from 'hooks/proposalBooking/useProposalBooking';
+import useProposalBooking, {
+  DetailedProposalBooking,
+} from 'hooks/proposalBooking/useProposalBooking';
 
 import ProposalDetailsAndBookingEvents from './ProposalDetailsAndBookingEvents';
 
@@ -74,10 +76,14 @@ export default function ProposalBookingDialog({
       }}
     >
       <DialogTitle>Proposal booking</DialogTitle>
-      <DialogContent>
+      <DialogContent className="tinyScroll">
         <ProposalDetailsAndBookingEvents
-          proposalBooking={proposalBooking}
-          setProposalBooking={setProposalBooking}
+          proposalBooking={proposalBooking as DetailedProposalBooking}
+          setProposalBooking={
+            setProposalBooking as Dispatch<
+              SetStateAction<DetailedProposalBooking>
+            >
+          }
           openedEventId={scheduledEventId}
         />
       </DialogContent>

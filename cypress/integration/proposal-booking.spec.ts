@@ -2,9 +2,9 @@ import {
   ProposalBookingFinalizeAction,
   ScheduledEventBookingType,
 } from '../../src/generated/sdk';
+import initialDBData from '../support/initialDBData';
 import {
   defaultEventBookingHourDateTime,
-  existingInstruments,
   getCurrentHourDateTime,
   getHourDateTimeAfter,
   openProposalBookingFromRightToolbar,
@@ -17,53 +17,13 @@ context('Proposal booking tests ', () => {
     cy.resetSchedulerDB(true);
   });
 
-  const existingInstrument = {
-    id: 1,
-    name: 'Instrument 1',
-  };
-
   const createdUserOperationsEvent = {
-    instrumentId: existingInstrument.id,
-    proposalBookingId: 1,
+    instrumentId: initialDBData.instruments[0].id,
+    proposalBookingId: initialDBData.proposalBooking.id,
     bookingType: ScheduledEventBookingType.USER_OPERATIONS,
     startsAt: defaultEventBookingHourDateTime,
     endsAt: getHourDateTimeAfter(24),
   };
-
-  const existingProposalData = {
-    proposalId: '999999',
-    title: 'Test proposal',
-    proposer: 'Carl Carlsson',
-  };
-
-  const existingEquipmentsData = [
-    {
-      id: 1,
-      name: 'Available equipment 1 - no auto accept',
-      description: '',
-      autoAccept: false,
-    },
-    {
-      id: 2,
-      name: 'Available equipment 2 - auto accept',
-      description: '',
-      autoAccept: true,
-    },
-    {
-      id: 5,
-      name: 'Under maintenance 1 - not started yet',
-      description: '',
-      autoAccept: false,
-    },
-    {
-      id: 7,
-      name: 'Under maintenance 3 - finished',
-      description: '',
-      autoAccept: false,
-    },
-  ];
-
-  const existingInstrumentScientistId = 100;
 
   describe('Proposal booking calls/proposals list', () => {
     it('should inform the user if the instrument has no calls', () => {
@@ -101,7 +61,7 @@ context('Proposal booking tests ', () => {
 
       cy.finishedLoading();
 
-      selectInstrument(existingInstruments[2].name);
+      selectInstrument(initialDBData.instruments[1].name);
 
       cy.get('[data-cy=btn-new-event]').should('exist');
       cy.contains(/instrument has no calls/i);
@@ -126,6 +86,15 @@ context('Proposal booking tests ', () => {
         cy.get('[data-cy="add-new-experiment-time"]').click();
 
         cy.finishedLoading();
+
+        cy.get('.MuiTabs-root button[id="vertical-tab-0"]')
+          .should('have.css', 'background-color')
+          .and('not.eq', 'unset')
+          .and('not.eq', 'transparent');
+
+        cy.get('[data-cy="status-indicator"]')
+          .should('have.css', 'color')
+          .and('eq', 'rgba(0, 0, 0, 0.54)');
 
         cy.get('[data-cy="experiment-time-wrapper"]').contains(
           defaultEventBookingHourDateTime
@@ -305,7 +274,7 @@ context('Proposal booking tests ', () => {
 
         // NOTE: Using fixed proposal name and shortcode because they are inserted inside the database using a seeder and always will be the same for the test cases.
         cy.get(
-          `[data-cy="proposal-event-${existingProposalData.title}-${existingProposalData.proposalId}"]`
+          `[data-cy="proposal-event-${initialDBData.proposal.title}-${initialDBData.proposal.proposalId}"]`
         )
           .closest('.rbc-event')
           .should('have.attr', 'style')
@@ -361,6 +330,8 @@ context('Proposal booking tests ', () => {
           'Experiment time should be booked between call cycle start and end date'
         );
 
+        cy.get('[data-cy="status-indicator"]').should('have.css', 'color');
+
         cy.get(
           '[data-cy="some-experiment-time-outside-cycle-interval-warning"]'
         ).should('exist');
@@ -413,7 +384,7 @@ context('Proposal booking tests ', () => {
             cy.updateEvent({
               input: {
                 scheduledEventId: result.createScheduledEvent.scheduledEvent.id,
-                localContact: existingInstrumentScientistId,
+                localContact: initialDBData.instrumentScientists[0].id,
                 startsAt: createdUserOperationsEvent.startsAt,
                 endsAt: createdUserOperationsEvent.endsAt,
               },
@@ -438,7 +409,7 @@ context('Proposal booking tests ', () => {
 
         cy.get('.rbc-time-content .rbc-event')
           .last()
-          .contains(existingProposalData.proposalId)
+          .contains(initialDBData.proposal.proposalId)
           .click();
 
         cy.finishedLoading();
@@ -473,7 +444,7 @@ context('Proposal booking tests ', () => {
 
         cy.get('.rbc-time-content .rbc-event')
           .last()
-          .contains(existingProposalData.proposalId)
+          .contains(initialDBData.proposal.proposalId)
           .click();
 
         cy.finishedLoading();
@@ -593,21 +564,23 @@ context('Proposal booking tests ', () => {
     describe('Equipment booking', () => {
       beforeEach(() => {
         cy.updateEquipment({
-          id: existingEquipmentsData[0].id,
+          id: initialDBData.equipments[0].id,
           updateEquipmentInput: {
-            name: existingEquipmentsData[0].name,
-            description: existingEquipmentsData[0].description,
-            autoAccept: existingEquipmentsData[0].autoAccept,
-            instrumentIds: [existingInstrument.id],
+            name: initialDBData.equipments[0].name,
+            description: initialDBData.equipments[0].description,
+            autoAccept: initialDBData.equipments[0].autoAccept,
+            ownerUserId: initialDBData.equipments[0].ownerUserId,
+            instrumentIds: [initialDBData.instruments[0].id],
           },
         });
         cy.updateEquipment({
-          id: existingEquipmentsData[1].id,
+          id: initialDBData.equipments[1].id,
           updateEquipmentInput: {
-            name: existingEquipmentsData[1].name,
-            description: existingEquipmentsData[1].description,
-            autoAccept: existingEquipmentsData[1].autoAccept,
-            instrumentIds: [existingInstrument.id],
+            name: initialDBData.equipments[1].name,
+            description: initialDBData.equipments[1].description,
+            autoAccept: initialDBData.equipments[1].autoAccept,
+            ownerUserId: initialDBData.equipments[1].ownerUserId,
+            instrumentIds: [initialDBData.instruments[0].id],
           },
         });
         cy.visit('/calendar');
@@ -625,30 +598,30 @@ context('Proposal booking tests ', () => {
         cy.finishedLoading();
         cy.get('[data-cy="select-equipment-table"]').should(
           'contain.text',
-          existingEquipmentsData[0].name
+          initialDBData.equipments[0].name
         );
         cy.get('[data-cy="select-equipment-table"]').should(
           'contain.text',
-          existingEquipmentsData[1].name
+          initialDBData.equipments[1].name
         );
         cy.get('[data-cy="select-equipment-table"]').should(
           'not.contain.text',
-          existingEquipmentsData[2].name
+          initialDBData.equipments[2].name
         );
         cy.get('[data-cy="select-equipment-table"]').should(
           'not.contain.text',
-          existingEquipmentsData[3].name
+          initialDBData.equipments[3].name
         );
         cy.get('[data-cy=enhanced-table-checkbox-0]').click();
         cy.get('[data-cy=enhanced-table-checkbox-1]').click();
         cy.get('[data-cy=btn-assign-equipment]').click();
         cy.get('[data-cy="time-slot-booked-equipments-table"]').should(
           'include.text',
-          existingEquipmentsData[0].name
+          initialDBData.equipments[0].name
         );
         cy.get('[data-cy="time-slot-booked-equipments-table"]').should(
           'include.text',
-          existingEquipmentsData[1].name
+          initialDBData.equipments[1].name
         );
         cy.get('[data-cy="accepted-equipment-warning"]').should(
           'contain.text',
@@ -659,69 +632,102 @@ context('Proposal booking tests ', () => {
           'All booked equipments must be accepted before activating the booking'
         );
       });
-      it('Officer should be able to assign change equipment owner people', () => {
+
+      it('Officer should be able to assign change equipment owner', () => {
         cy.initializeSession('UserOfficer');
         let equipmentOwner: string;
         cy.visit('/equipments');
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
         cy.get('[data-cy="equipment-owner"]').then((element) => {
           equipmentOwner = element.text();
         });
-        cy.get('[data-cy="change-equipment-owner"]').click();
-        cy.get(
-          '[data-cy="equipment-responsible"] button[aria-label="Select user"]'
-        )
-          .first()
-          .click();
+        cy.get('[data-cy=btn-edit-equipment]').click();
+        cy.get('[data-cy="equipment-owner"]').click();
+        cy.get('#menu-ownerUserId [role="option"]').first().click();
+        cy.get('[data-cy="btn-save-equipment"]').click();
         cy.get('[role=alert]').contains(/success/i);
         cy.get('[data-cy="equipment-owner"]').should((element) => {
           expect(element.text()).to.not.equal(equipmentOwner);
         });
       });
+
       it('Officer should be able to assign equipment responsible people', () => {
         cy.initializeSession('UserOfficer');
+        let equipmentResponsible: string;
         cy.visit('/equipments');
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
-        cy.get('[data-cy="add-equipment-responsible"]').click();
-        cy.get('input[type="checkbox"]').first().click();
-        cy.get('[data-cy="assign-selected-users"]').click();
-        cy.get('[role=alert]').contains(/success/i);
-        cy.visit('/equipments');
-        cy.contains(existingEquipmentsData[1].name)
-          .parent()
-          .find('[data-testid="VisibilityIcon"]')
+
+        cy.get('[data-cy="equipment-responsible-people"]').then((element) => {
+          equipmentResponsible = element.text();
+        });
+
+        cy.get('[data-cy=btn-edit-equipment]').click();
+
+        cy.get('[data-cy="equipment-responsible-people-select"]').click();
+        cy.get('[role="presentation"] .MuiAutocomplete-listbox li')
+          .first()
           .click();
-        cy.get('[data-cy="add-equipment-responsible"]').click();
-        cy.get('input[type="checkbox"]').first().click();
-        cy.get('[data-cy="assign-selected-users"]').click();
+        cy.get('[data-cy="equipment-responsible-people-select"]').click();
+        cy.get('[role="presentation"] .MuiAutocomplete-listbox li')
+          .last()
+          .click();
+        cy.get('[data-cy="btn-save-equipment"]').click();
+
         cy.get('[role=alert]').contains(/success/i);
+        cy.get('[data-cy="equipment-responsible-people"]').then((element) => {
+          expect(element.text()).to.not.equal(equipmentResponsible);
+        });
+
+        cy.get('[data-cy=btn-edit-equipment]').click();
+
+        cy.get('[data-cy="equipment-responsible-people-select"]').click();
+        cy.get('[role="presentation"] .MuiAutocomplete-listbox li')
+          .first()
+          .click();
+        cy.get('[data-cy="equipment-responsible-people-select"]').click();
+        cy.get('[role="presentation"] .MuiAutocomplete-listbox li')
+          .last()
+          .click();
+
+        cy.get(
+          '[data-cy="equipment-responsible-people-select"] .MuiInput-root .MuiChip-root'
+        ).should('not.exist');
+        cy.get('[data-cy="btn-save-equipment"]').click();
+
+        cy.get('[role=alert]').contains(/success/i);
+
+        cy.get('[data-cy="equipment-responsible-people"]').then((element) => {
+          expect(element.text()).to.equal(equipmentResponsible);
+        });
       });
     });
 
     describe('Equipment assigned to scheduled event tests', () => {
       beforeEach(() => {
         cy.updateEquipment({
-          id: existingEquipmentsData[0].id,
+          id: initialDBData.equipments[0].id,
           updateEquipmentInput: {
-            name: existingEquipmentsData[0].name,
-            description: existingEquipmentsData[0].description,
-            autoAccept: existingEquipmentsData[0].autoAccept,
-            instrumentIds: [existingInstrument.id],
+            name: initialDBData.equipments[0].name,
+            description: initialDBData.equipments[0].description,
+            autoAccept: initialDBData.equipments[0].autoAccept,
+            instrumentIds: [initialDBData.instruments[0].id],
+            ownerUserId: 1,
           },
         });
         cy.updateEquipment({
-          id: existingEquipmentsData[1].id,
+          id: initialDBData.equipments[1].id,
           updateEquipmentInput: {
-            name: existingEquipmentsData[1].name,
-            description: existingEquipmentsData[1].description,
-            autoAccept: existingEquipmentsData[1].autoAccept,
-            instrumentIds: [existingInstrument.id],
+            name: initialDBData.equipments[1].name,
+            description: initialDBData.equipments[1].description,
+            autoAccept: initialDBData.equipments[1].autoAccept,
+            instrumentIds: [initialDBData.instruments[0].id],
+            ownerUserId: 1,
           },
         });
         cy.createEvent({ input: createdUserOperationsEvent }).then((result) => {
@@ -729,7 +735,10 @@ context('Proposal booking tests ', () => {
             cy.assignEquipmentToScheduledEvent({
               assignEquipmentsToScheduledEventInput: {
                 scheduledEventId: result.createScheduledEvent.scheduledEvent.id,
-                equipmentIds: [1, 2],
+                equipmentIds: [
+                  initialDBData.equipments[0].id,
+                  initialDBData.equipments[1].id,
+                ],
                 proposalBookingId: createdUserOperationsEvent.proposalBookingId,
               },
             });
@@ -754,10 +763,10 @@ context('Proposal booking tests ', () => {
         selectInstrument();
         openProposalBookingFromRightToolbar();
         cy.finishedLoading();
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .contains(/pending/i);
-        cy.contains(existingEquipmentsData[1].name)
+        cy.contains(initialDBData.equipments[1].name)
           .parent()
           .contains(/accepted/i);
       });
@@ -770,21 +779,21 @@ context('Proposal booking tests ', () => {
           .click();
 
         cy.get('[role="presentation"]').contains(
-          existingEquipmentsData[0].name
+          initialDBData.equipments[0].name
         );
         cy.get('[role="presentation"]').contains(
-          existingEquipmentsData[1].name
+          initialDBData.equipments[1].name
         );
 
         cy.visit('/requests');
 
         cy.get('[data-cy="equipments-requests-table"]').should(
           'not.contain',
-          existingEquipmentsData[0].name
+          initialDBData.equipments[0].name
         );
         cy.get('[data-cy="equipments-requests-table"]').should(
           'not.contain',
-          existingEquipmentsData[1].name
+          initialDBData.equipments[1].name
         );
       });
 
@@ -796,16 +805,16 @@ context('Proposal booking tests ', () => {
           .click();
 
         cy.get('[role="presentation"]').contains(
-          existingEquipmentsData[0].name
+          initialDBData.equipments[0].name
         );
         cy.get('[role="presentation"]').contains(
-          existingEquipmentsData[1].name
+          initialDBData.equipments[1].name
         );
 
         cy.visit('/equipments');
 
-        cy.contains(existingEquipmentsData[0].name);
-        cy.contains(existingEquipmentsData[1].name);
+        cy.contains(initialDBData.equipments[0].name);
+        cy.contains(initialDBData.equipments[1].name);
       });
 
       it('should not be able to open time slot by clicking on the calendar equipment event if not responsible person or owner', () => {
@@ -814,7 +823,7 @@ context('Proposal booking tests ', () => {
           .should('not.be.disabled')
           .click();
         cy.get('[role="presentation"]')
-          .contains(existingEquipmentsData[1].name)
+          .contains(initialDBData.equipments[1].name)
           .click();
 
         cy.get('.rbc-time-content .rbc-event').should('not.exist');
@@ -823,7 +832,7 @@ context('Proposal booking tests ', () => {
       it('should be able to open time slot by clicking on the calendar equipment event if it is responsible person or owner', () => {
         // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
         cy.visit('/equipments');
-        cy.contains(existingEquipmentsData[1].name)
+        cy.contains(initialDBData.equipments[1].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
@@ -869,7 +878,7 @@ context('Proposal booking tests ', () => {
         cy.initializeSession('UserOfficer');
         // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
         cy.visit('/equipments');
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
@@ -881,18 +890,18 @@ context('Proposal booking tests ', () => {
 
         cy.visit('/requests');
 
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .contains(defaultEventBookingHourDateTime);
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .contains(getHourDateTimeAfter(24));
 
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .find('[data-cy="accept-equipment-request"]')
           .should('exist');
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .find('[data-cy="reject-equipment-request"]')
           .should('exist');
@@ -906,7 +915,7 @@ context('Proposal booking tests ', () => {
       it('should be able to accept / reject assignment request', () => {
         // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
         cy.visit('/equipments');
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
@@ -918,12 +927,12 @@ context('Proposal booking tests ', () => {
 
         cy.visit('/equipments');
 
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
 
-        cy.contains(existingEquipmentsData[0].name);
+        cy.contains(initialDBData.equipments[0].name);
 
         cy.contains(defaultEventBookingHourDateTime);
         cy.contains(getHourDateTimeAfter(24));
@@ -949,7 +958,7 @@ context('Proposal booking tests ', () => {
         openProposalBookingFromRightToolbar();
         cy.finishedLoading();
 
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .find('button[aria-label="Delete"]')
           .click();
@@ -958,7 +967,7 @@ context('Proposal booking tests ', () => {
 
         cy.get('button[aria-label="Cancel"]').click();
 
-        cy.contains(existingEquipmentsData[0].name)
+        cy.contains(initialDBData.equipments[0].name)
           .parent()
           .find('button[aria-label="Delete"]')
           .click();
@@ -970,14 +979,14 @@ context('Proposal booking tests ', () => {
         cy.finishedLoading();
 
         cy.get('[role=alert]').contains(/removed/i);
-        cy.contains(existingEquipmentsData[1].name);
-        cy.should('not.contain', existingEquipmentsData[0].name);
+        cy.contains(initialDBData.equipments[1].name);
+        cy.should('not.contain', initialDBData.equipments[0].name);
       });
 
       it('should show the assigned time slot on the equipment page', () => {
         // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
         cy.visit('/equipments');
-        cy.contains(existingEquipmentsData[1].name)
+        cy.contains(initialDBData.equipments[1].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
@@ -988,12 +997,12 @@ context('Proposal booking tests ', () => {
         // <-----------------------------------------------
 
         cy.visit('/equipments');
-        cy.contains(existingEquipmentsData[1].name)
+        cy.contains(initialDBData.equipments[1].name)
           .parent()
           .find('[data-testid="VisibilityIcon"]')
           .click();
 
-        cy.contains(existingEquipmentsData[1].name);
+        cy.contains(initialDBData.equipments[1].name);
 
         cy.finishedLoading();
 
@@ -1018,6 +1027,8 @@ context('Proposal booking tests ', () => {
         cy.get(
           '[data-cy="time-slot-booked-equipments-table"] [aria-label="Book equipment"]'
         ).should('not.exist');
+
+        cy.get('[data-cy="status-indicator"]').should('have.css', 'color');
       });
     });
 
@@ -1031,7 +1042,7 @@ context('Proposal booking tests ', () => {
 
             cy.activateEvent({
               input: {
-                id: result.createScheduledEvent.scheduledEvent.id,
+                ids: [result.createScheduledEvent.scheduledEvent.id],
               },
             });
           }
@@ -1240,6 +1251,10 @@ context('Proposal booking tests ', () => {
           .then((ariaLabel) => {
             expect(ariaLabel).not.to.be.empty;
           });
+
+        cy.get('[data-cy="status-indicator"]')
+          .should('have.css', 'color')
+          .and('eq', 'rgba(0, 0, 0, 0.26)');
       });
 
       it('Completed events should have gray color and opacity', () => {
@@ -1257,7 +1272,7 @@ context('Proposal booking tests ', () => {
         cy.get('#instrument-calls-tree-view [role=treeitem]').first().click();
 
         cy.get(
-          `[data-cy="proposal-event-${existingProposalData.title}-${existingProposalData.proposalId}"]`
+          `[data-cy="proposal-event-${initialDBData.proposal.title}-${initialDBData.proposal.proposalId}"]`
         ).should('contain.text', '[Completed]');
 
         cy.get(
@@ -1266,12 +1281,12 @@ context('Proposal booking tests ', () => {
           .first()
           .should(
             'contain.text',
-            `${existingProposalData.proposer} - (${existingProposalData.proposalId})`
+            `${initialDBData.proposal.proposer} - (${initialDBData.proposal.proposalId})`
           )
           .and('contain.text', '[Completed]');
 
         cy.get(
-          `[data-cy="proposal-event-${existingProposalData.title}-${existingProposalData.proposalId}"]`
+          `[data-cy="proposal-event-${initialDBData.proposal.title}-${initialDBData.proposal.proposalId}"]`
         )
           .closest('.rbc-event')
           .should('have.attr', 'style')
@@ -1323,7 +1338,7 @@ context('Proposal booking tests ', () => {
         cy.visit('/calendar');
 
         cy.finishedLoading();
-        selectInstrument(existingInstruments[0].name);
+        selectInstrument(initialDBData.instruments[0].name);
         openProposalBookingFromRightToolbar();
 
         cy.get('#vertical-tab-0').click();

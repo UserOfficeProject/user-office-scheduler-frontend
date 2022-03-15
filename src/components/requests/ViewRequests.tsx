@@ -134,20 +134,23 @@ export default function ViewRequests() {
 
         setConfirmationLoading(false);
 
-        isSuccess &&
-          setRows(
-            rows.map(({ ...rest }) => ({
-              ...rest,
-              equipmentAssignmentStatus:
-                rest.id === row.id ? newStatus : rest.equipmentAssignmentStatus,
-            }))
-          );
+        if (isSuccess) {
+          const newRows = rows.map((item) => ({
+            ...item,
+            equipmentAssignmentStatus:
+              item.id === row.id && item.equipmentId === row.equipmentId
+                ? newStatus
+                : item.equipmentAssignmentStatus,
+          }));
 
-        isSuccess
-          ? enqueueSnackbar('Success', { variant: 'success' })
-          : enqueueSnackbar('Failed to confirm the assignment', {
-              variant: 'error',
-            });
+          setRows(newRows);
+
+          enqueueSnackbar('Success', { variant: 'success' });
+        } else {
+          enqueueSnackbar('Failed to confirm the assignment', {
+            variant: 'error',
+          });
+        }
       },
     });
   };

@@ -2,7 +2,7 @@ import { GraphQLClient } from 'graphql-request';
 import * as Dom from 'graphql-request/dist/types.dom';
 import gql from 'graphql-tag';
 export type Maybe<T> = T | null;
-export type InputMaybe<T> = T | null;
+export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
@@ -20,8 +20,8 @@ export type Scalars = {
   TzLessDateTime: string;
 };
 
-export type ActivateScheduledEventInput = {
-  id: Scalars['Int'];
+export type ActivateScheduledEventsInput = {
+  ids: Array<Scalars['Int']>;
 };
 
 export type AddLostTimeInput = {
@@ -349,13 +349,13 @@ export type Equipment = {
   createdAt: Scalars['DateTime'];
   description: Maybe<Scalars['String']>;
   equipmentInstruments: Array<Instrument>;
-  equipmentResponsible: Array<User>;
+  equipmentResponsible: Array<BasicUserDetails>;
   events: Array<ScheduledEvent>;
   id: Scalars['Int'];
   maintenanceEndsAt: Maybe<Scalars['TzLessDateTime']>;
   maintenanceStartsAt: Maybe<Scalars['TzLessDateTime']>;
   name: Scalars['String'];
-  owner: Maybe<User>;
+  owner: Maybe<BasicUserDetails>;
   updatedAt: Scalars['DateTime'];
 };
 
@@ -375,20 +375,17 @@ export type EquipmentInput = {
   autoAccept: Scalars['Boolean'];
   color?: InputMaybe<Scalars['String']>;
   description: Scalars['String'];
+  equipmentResponsible?: InputMaybe<Array<Scalars['Int']>>;
   instrumentIds?: InputMaybe<Array<Scalars['Int']>>;
   maintenanceEndsAt?: InputMaybe<Scalars['TzLessDateTime']>;
   maintenanceStartsAt?: InputMaybe<Scalars['TzLessDateTime']>;
   name: Scalars['String'];
+  ownerUserId: Scalars['Int'];
 };
 
 export type EquipmentResponseWrap = {
   equipment: Maybe<Equipment>;
   error: Maybe<Scalars['String']>;
-};
-
-export type EquipmentResponsibleInput = {
-  equipmentId: Scalars['Int'];
-  userIds: Array<Scalars['Int']>;
 };
 
 export type EquipmentWithAssignmentStatus = {
@@ -397,13 +394,13 @@ export type EquipmentWithAssignmentStatus = {
   createdAt: Scalars['DateTime'];
   description: Maybe<Scalars['String']>;
   equipmentInstruments: Array<Instrument>;
-  equipmentResponsible: Array<User>;
+  equipmentResponsible: Array<BasicUserDetails>;
   events: Array<ScheduledEvent>;
   id: Scalars['Int'];
   maintenanceEndsAt: Maybe<Scalars['TzLessDateTime']>;
   maintenanceStartsAt: Maybe<Scalars['TzLessDateTime']>;
   name: Scalars['String'];
-  owner: Maybe<User>;
+  owner: Maybe<BasicUserDetails>;
   status: EquipmentAssignmentStatus;
   updatedAt: Scalars['DateTime'];
 };
@@ -738,9 +735,8 @@ export type MoveProposalWorkflowStatusInput = {
 
 export type Mutation = {
   activateProposalBooking: ProposalBookingResponseWrap;
-  activateScheduledEvent: ScheduledEventResponseWrap;
+  activateScheduledEvents: ScheduledEventsResponseWrap;
   addClientLog: SuccessResponseWrap;
-  addEquipmentResponsible: Scalars['Boolean'];
   addLostTime: LostTimeResponseWrap;
   addProposalWorkflowStatus: ProposalWorkflowConnectionResponseWrap;
   addReview: ReviewWithNextStatusResponseWrap;
@@ -861,7 +857,6 @@ export type Mutation = {
   updateApiAccessToken: ApiAccessTokenResponseWrap;
   updateCall: CallResponseWrap;
   updateEquipment: EquipmentResponseWrap;
-  updateEquipmentOwner: Scalars['Boolean'];
   updateEsi: EsiResponseWrap;
   updateFeedback: FeedbackResponseWrap;
   updateGenericTemplate: GenericTemplateResponseWrap;
@@ -897,18 +892,13 @@ export type MutationActivateProposalBookingArgs = {
 };
 
 
-export type MutationActivateScheduledEventArgs = {
-  activateScheduledEvent: ActivateScheduledEventInput;
+export type MutationActivateScheduledEventsArgs = {
+  activateScheduledEvents: ActivateScheduledEventsInput;
 };
 
 
 export type MutationAddClientLogArgs = {
   error: Scalars['String'];
-};
-
-
-export type MutationAddEquipmentResponsibleArgs = {
-  equipmentResponsibleInput: EquipmentResponsibleInput;
 };
 
 
@@ -1610,11 +1600,6 @@ export type MutationUpdateCallArgs = {
 export type MutationUpdateEquipmentArgs = {
   id: Scalars['Int'];
   updateEquipmentInput: EquipmentInput;
-};
-
-
-export type MutationUpdateEquipmentOwnerArgs = {
-  updateEquipmentOwnerInput: UpdateEquipmentOwnerInput;
 };
 
 
@@ -2989,14 +2974,13 @@ export type ScheduledEvent = {
   localContact: Maybe<BasicUserDetails>;
   proposalBooking: Maybe<ProposalBooking>;
   proposalBookingId: Maybe<Scalars['Int']>;
-  scheduledBy: Maybe<User>;
+  scheduledBy: Maybe<BasicUserDetails>;
   startsAt: Scalars['TzLessDateTime'];
   status: ProposalBookingStatusCore;
   updatedAt: Scalars['DateTime'];
 };
 
 export enum ScheduledEventBookingType {
-  COMMISSIONING = 'COMMISSIONING',
   EQUIPMENT = 'EQUIPMENT',
   MAINTENANCE = 'MAINTENANCE',
   SHUTDOWN = 'SHUTDOWN',
@@ -3031,9 +3015,11 @@ export type ScheduledEventResponseWrap = {
   scheduledEvent: Maybe<ScheduledEvent>;
 };
 
+export type ScheduledEventWithRejection = Rejection | ScheduledEvent;
+
 export type ScheduledEventsResponseWrap = {
   error: Maybe<Scalars['String']>;
-  scheduledEvents: Maybe<Array<ScheduledEvent>>;
+  scheduledEvents: Array<ScheduledEventWithRejection>;
 };
 
 export type SchedulerConfig = {
@@ -3361,11 +3347,6 @@ export type UpdateCallInput = {
   title?: InputMaybe<Scalars['String']>;
 };
 
-export type UpdateEquipmentOwnerInput = {
-  equipmentId: Scalars['Int'];
-  userId: Scalars['Int'];
-};
-
 export type UpdateLostTimeInput = {
   endsAt: Scalars['TzLessDateTime'];
   id: Scalars['Int'];
@@ -3532,13 +3513,6 @@ export type PrepareSchedulerDbMutationVariables = Exact<{
 
 export type PrepareSchedulerDbMutation = { resetSchedulerDb: string };
 
-export type AddEquipmentResponsibleMutationVariables = Exact<{
-  equipmentResponsibleInput: EquipmentResponsibleInput;
-}>;
-
-
-export type AddEquipmentResponsibleMutation = { addEquipmentResponsible: boolean };
-
 export type AssignEquipmentToScheduledEventMutationVariables = Exact<{
   assignEquipmentsToScheduledEventInput: AssignEquipmentsToScheduledEventInput;
 }>;
@@ -3567,6 +3541,10 @@ export type DeleteEquipmentAssignmentMutationVariables = Exact<{
 
 export type DeleteEquipmentAssignmentMutation = { deleteEquipmentAssignment: boolean };
 
+export type EquipmentFragment = { id: number, name: string, description: string | null, createdAt: any, updatedAt: any, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean };
+
+export type EquipmentWithStatusFragment = { id: number, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, status: EquipmentAssignmentStatus };
+
 export type GetAvailableEquipmentsQueryVariables = Exact<{
   scheduledEventId: Scalars['Int'];
 }>;
@@ -3579,12 +3557,12 @@ export type GetEquipmentQueryVariables = Exact<{
 }>;
 
 
-export type GetEquipmentQuery = { equipment: { id: number, createdAt: any, updatedAt: any, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean, owner: { id: number, firstname: string, lastname: string } | null, equipmentResponsible: Array<{ id: number, firstname: string, lastname: string }>, equipmentInstruments: Array<{ id: number, name: string }> } | null };
+export type GetEquipmentQuery = { equipment: { id: number, createdAt: any, updatedAt: any, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean, owner: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null, equipmentResponsible: Array<{ id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null }>, equipmentInstruments: Array<{ id: number, name: string }> } | null };
 
 export type GetEquipmentsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetEquipmentsQuery = { equipments: Array<{ id: number, createdAt: any, updatedAt: any, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean, equipmentInstruments: Array<{ id: number, name: string }> }> };
+export type GetEquipmentsQuery = { equipments: Array<{ id: number, name: string, description: string | null, createdAt: any, updatedAt: any, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean, equipmentInstruments: Array<{ id: number, name: string }> }> };
 
 export type UpdateEquipmentMutationVariables = Exact<{
   id: Scalars['Int'];
@@ -3593,13 +3571,6 @@ export type UpdateEquipmentMutationVariables = Exact<{
 
 
 export type UpdateEquipmentMutation = { updateEquipment: { error: string | null, equipment: { id: number, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, autoAccept: boolean } | null } };
-
-export type UpdateEquipmentOwnerMutationVariables = Exact<{
-  updateEquipmentOwnerInput: UpdateEquipmentOwnerInput;
-}>;
-
-
-export type UpdateEquipmentOwnerMutation = { updateEquipmentOwner: boolean };
 
 export type GetUserInstrumentsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -3680,7 +3651,7 @@ export type GetInstrumentProposalBookingsQueryVariables = Exact<{
 }>;
 
 
-export type GetInstrumentProposalBookingsQuery = { instrumentProposalBookings: Array<{ id: number, createdAt: any, updatedAt: any, status: ProposalBookingStatusCore, allocatedTime: number, call: { id: number, shortCode: string, startCycle: any, endCycle: any, cycleComment: string } | null, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { id: number, firstname: string, lastname: string } | null } | null, instrument: { id: number, name: string } | null, scheduledEvents: Array<{ id: number, startsAt: string, endsAt: string }> }> };
+export type GetInstrumentProposalBookingsQuery = { instrumentProposalBookings: Array<{ id: number, createdAt: any, updatedAt: any, status: ProposalBookingStatusCore, allocatedTime: number, call: { id: number, shortCode: string, startCycle: any, endCycle: any, cycleComment: string } | null, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null } | null, instrument: { id: number, name: string } | null, scheduledEvents: Array<{ id: number, startsAt: string, endsAt: string }> }> };
 
 export type GetProposalBookingQueryVariables = Exact<{
   id: Scalars['Int'];
@@ -3688,7 +3659,7 @@ export type GetProposalBookingQueryVariables = Exact<{
 }>;
 
 
-export type GetProposalBookingQuery = { proposalBooking: { id: number, createdAt: any, updatedAt: any, status: ProposalBookingStatusCore, allocatedTime: number, call: { id: number, shortCode: string, startCycle: any, endCycle: any, cycleComment: string } | null, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { id: number, firstname: string, lastname: string } | null } | null, scheduledEvents: Array<{ id: number, startsAt: string, endsAt: string, bookingType: ScheduledEventBookingType, status: ProposalBookingStatusCore, description: string | null, scheduledBy: { id: number, firstname: string, lastname: string } | null, localContact: { id: number, firstname: string, lastname: string } | null }>, instrument: { id: number, name: string, beamlineManager: { id: number, firstname: string, lastname: string, organisation: string }, scientists: Array<{ id: number, firstname: string, lastname: string, organisation: string }> } | null } | null };
+export type GetProposalBookingQuery = { proposalBooking: { id: number, createdAt: any, updatedAt: any, status: ProposalBookingStatusCore, allocatedTime: number, call: { id: number, shortCode: string, startCycle: any, endCycle: any, cycleComment: string } | null, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null } | null, scheduledEvents: Array<{ id: number, startsAt: string, endsAt: string, bookingType: ScheduledEventBookingType, status: ProposalBookingStatusCore, description: string | null, scheduledBy: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null, localContact: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null }>, instrument: { id: number, name: string, beamlineManager: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null }, scientists: Array<{ id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null }> } | null } | null };
 
 export type ReopenProposalBookingMutationVariables = Exact<{
   id: Scalars['Int'];
@@ -3697,26 +3668,26 @@ export type ReopenProposalBookingMutationVariables = Exact<{
 
 export type ReopenProposalBookingMutation = { reopenProposalBooking: { error: string | null } };
 
-export type ActivateScheduledEventMutationVariables = Exact<{
-  input: ActivateScheduledEventInput;
+export type ActivateScheduledEventsMutationVariables = Exact<{
+  input: ActivateScheduledEventsInput;
 }>;
 
 
-export type ActivateScheduledEventMutation = { activateScheduledEvent: { error: string | null, scheduledEvent: { id: number, startsAt: string, endsAt: string } | null } };
+export type ActivateScheduledEventsMutation = { activateScheduledEvents: { error: string | null, scheduledEvents: Array<{ reason: string } | { id: number, startsAt: string, endsAt: string }> } };
 
 export type CreateScheduledEventMutationVariables = Exact<{
   input: NewScheduledEventInput;
 }>;
 
 
-export type CreateScheduledEventMutation = { createScheduledEvent: { error: string | null, scheduledEvent: { id: number, startsAt: string, endsAt: string, bookingType: ScheduledEventBookingType, status: ProposalBookingStatusCore, description: string | null, scheduledBy: { id: number, firstname: string, lastname: string } | null } | null } };
+export type CreateScheduledEventMutation = { createScheduledEvent: { error: string | null, scheduledEvent: { id: number, startsAt: string, endsAt: string, bookingType: ScheduledEventBookingType, status: ProposalBookingStatusCore, description: string | null, scheduledBy: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null } | null } };
 
 export type DeleteScheduledEventsMutationVariables = Exact<{
   input: DeleteScheduledEventsInput;
 }>;
 
 
-export type DeleteScheduledEventsMutation = { deleteScheduledEvents: { error: string | null, scheduledEvents: Array<{ id: number, bookingType: ScheduledEventBookingType, startsAt: string, endsAt: string, description: string | null, status: ProposalBookingStatusCore }> | null } };
+export type DeleteScheduledEventsMutation = { deleteScheduledEvents: { error: string | null, scheduledEvents: Array<{ reason: string } | { id: number, startsAt: string, endsAt: string }> } };
 
 export type FinalizeScheduledEventMutationVariables = Exact<{
   input: FinalizeScheduledEventInput;
@@ -3725,6 +3696,12 @@ export type FinalizeScheduledEventMutationVariables = Exact<{
 
 export type FinalizeScheduledEventMutation = { finalizeScheduledEvent: { error: string | null } };
 
+type ScheduledEventWithRejection_Rejection_Fragment = { reason: string };
+
+type ScheduledEventWithRejection_ScheduledEvent_Fragment = { id: number, startsAt: string, endsAt: string };
+
+export type ScheduledEventWithRejectionFragment = ScheduledEventWithRejection_Rejection_Fragment | ScheduledEventWithRejection_ScheduledEvent_Fragment;
+
 export type GetEquipmentScheduledEventsQueryVariables = Exact<{
   equipmentIds: Array<Scalars['Int']> | Scalars['Int'];
   endsAt: Scalars['TzLessDateTime'];
@@ -3732,14 +3709,14 @@ export type GetEquipmentScheduledEventsQueryVariables = Exact<{
 }>;
 
 
-export type GetEquipmentScheduledEventsQuery = { equipments: Array<{ id: number, name: string, color: string | null, events: Array<{ id: number, startsAt: string, endsAt: string, status: ProposalBookingStatusCore, equipmentAssignmentStatus: EquipmentAssignmentStatus | null, equipmentId: number | null, proposalBooking: { status: ProposalBookingStatusCore, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { firstname: string, lastname: string } | null } | null } | null, instrument: { id: number, name: string } | null, scheduledBy: { id: number, firstname: string, lastname: string } | null, localContact: { id: number, firstname: string, lastname: string } | null }> }> };
+export type GetEquipmentScheduledEventsQuery = { equipments: Array<{ id: number, name: string, color: string | null, events: Array<{ id: number, startsAt: string, endsAt: string, status: ProposalBookingStatusCore, equipmentAssignmentStatus: EquipmentAssignmentStatus | null, equipmentId: number | null, proposalBooking: { status: ProposalBookingStatusCore, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null } | null } | null, instrument: { id: number, name: string } | null, scheduledBy: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null, localContact: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null }> }> };
 
 export type GetProposalBookingScheduledEventsQueryVariables = Exact<{
   proposalBookingId: Scalars['Int'];
 }>;
 
 
-export type GetProposalBookingScheduledEventsQuery = { proposalBookingScheduledEvents: Array<{ id: number, startsAt: string, endsAt: string, bookingType: ScheduledEventBookingType, status: ProposalBookingStatusCore, description: string | null, scheduledBy: { id: number, firstname: string, lastname: string } | null, localContact: { id: number, firstname: string, lastname: string } | null }> };
+export type GetProposalBookingScheduledEventsQuery = { proposalBookingScheduledEvents: Array<{ id: number, startsAt: string, endsAt: string, bookingType: ScheduledEventBookingType, status: ProposalBookingStatusCore, description: string | null, scheduledBy: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null, localContact: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null }> };
 
 export type GetScheduledEventEquipmentsQueryVariables = Exact<{
   proposalBookingId: Scalars['Int'];
@@ -3756,7 +3733,7 @@ export type GetScheduledEventWithEquipmentsQueryVariables = Exact<{
 }>;
 
 
-export type GetScheduledEventWithEquipmentsQuery = { proposalBookingScheduledEvent: { id: number, startsAt: string, endsAt: string, status: ProposalBookingStatusCore, proposalBooking: { id: number, status: ProposalBookingStatusCore, allocatedTime: number, scheduledEvents: Array<{ id: number, startsAt: string, endsAt: string }>, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { firstname: string, lastname: string } | null } | null, call: { id: number, shortCode: string, startCycle: any, endCycle: any, cycleComment: string } | null } | null, scheduledBy: { firstname: string, lastname: string } | null, equipments: Array<{ id: number, name: string, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, status: EquipmentAssignmentStatus }> } | null };
+export type GetScheduledEventWithEquipmentsQuery = { proposalBookingScheduledEvent: { id: number, startsAt: string, endsAt: string, status: ProposalBookingStatusCore, proposalBooking: { id: number, status: ProposalBookingStatusCore, allocatedTime: number, scheduledEvents: Array<{ id: number, startsAt: string, endsAt: string }>, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null } | null, call: { id: number, shortCode: string, startCycle: any, endCycle: any, cycleComment: string } | null } | null, scheduledBy: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null, equipments: Array<{ id: number, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, status: EquipmentAssignmentStatus }> } | null };
 
 export type GetScheduledEventsQueryVariables = Exact<{
   filter: ScheduledEventFilter;
@@ -3764,14 +3741,14 @@ export type GetScheduledEventsQueryVariables = Exact<{
 }>;
 
 
-export type GetScheduledEventsQuery = { scheduledEvents: Array<{ id: number, bookingType: ScheduledEventBookingType, equipmentId: number | null, startsAt: string, endsAt: string, status: ProposalBookingStatusCore, description: string | null, color: string | null, instrument: { id: number, name: string } | null, scheduledBy: { firstname: string, lastname: string } | null, localContact: { id: number, firstname: string, lastname: string } | null, proposalBooking: { id: number, createdAt: any, updatedAt: any, status: ProposalBookingStatusCore, allocatedTime: number, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { firstname: string, lastname: string } | null } | null, call: { id: number, shortCode: string, startCycle: any, endCycle: any, cycleComment: string } | null, scheduledEvents: Array<{ id: number, startsAt: string, endsAt: string }> } | null }> };
+export type GetScheduledEventsQuery = { scheduledEvents: Array<{ id: number, bookingType: ScheduledEventBookingType, equipmentId: number | null, startsAt: string, endsAt: string, status: ProposalBookingStatusCore, description: string | null, color: string | null, instrument: { id: number, name: string } | null, scheduledBy: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null, localContact: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null, proposalBooking: { id: number, createdAt: any, updatedAt: any, status: ProposalBookingStatusCore, allocatedTime: number, proposal: { primaryKey: number, title: string, proposalId: string, proposer: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null } | null, call: { id: number, shortCode: string, startCycle: any, endCycle: any, cycleComment: string } | null, scheduledEvents: Array<{ id: number, startsAt: string, endsAt: string }> } | null }> };
 
 export type GetScheduledEventsWithEquipmentsQueryVariables = Exact<{
   proposalBookingId: Scalars['Int'];
 }>;
 
 
-export type GetScheduledEventsWithEquipmentsQuery = { proposalBookingScheduledEvents: Array<{ id: number, startsAt: string, endsAt: string, status: ProposalBookingStatusCore, equipments: Array<{ id: number, name: string, description: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, status: EquipmentAssignmentStatus }> }> };
+export type GetScheduledEventsWithEquipmentsQuery = { proposalBookingScheduledEvents: Array<{ id: number, startsAt: string, endsAt: string, status: ProposalBookingStatusCore, equipments: Array<{ id: number, name: string, description: string | null, color: string | null, maintenanceStartsAt: string | null, maintenanceEndsAt: string | null, status: EquipmentAssignmentStatus }> }> };
 
 export type ReopenScheduledEventMutationVariables = Exact<{
   id: Scalars['Int'];
@@ -3785,9 +3762,9 @@ export type UpdateScheduledEventMutationVariables = Exact<{
 }>;
 
 
-export type UpdateScheduledEventMutation = { updateScheduledEvent: { error: string | null, scheduledEvent: { id: number, startsAt: string, endsAt: string, localContact: { id: number, firstname: string, lastname: string } | null } | null } };
+export type UpdateScheduledEventMutation = { updateScheduledEvent: { error: string | null, scheduledEvent: { id: number, startsAt: string, endsAt: string, localContact: { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null } | null } | null } };
 
-export type BasicUserDetailsFragment = { id: number, firstname: string, lastname: string, organisation: string, position: string, created: any | null, placeholder: boolean | null };
+export type BasicUserDetailsFragment = { id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null };
 
 export type GetUsersQueryVariables = Exact<{
   filter?: InputMaybe<Scalars['String']>;
@@ -3798,8 +3775,44 @@ export type GetUsersQueryVariables = Exact<{
 }>;
 
 
-export type GetUsersQuery = { users: { totalCount: number, users: Array<{ id: number, firstname: string, lastname: string, organisation: string, position: string, created: any | null, placeholder: boolean | null }> } | null };
+export type GetUsersQuery = { users: { totalCount: number, users: Array<{ id: number, firstname: string, lastname: string, organisation: string, position: string, placeholder: boolean | null }> } | null };
 
+export const EquipmentFragmentDoc = gql`
+    fragment equipment on Equipment {
+  id
+  name
+  description
+  createdAt
+  updatedAt
+  color
+  maintenanceStartsAt
+  maintenanceEndsAt
+  autoAccept
+}
+    `;
+export const EquipmentWithStatusFragmentDoc = gql`
+    fragment equipmentWithStatus on EquipmentWithAssignmentStatus {
+  id
+  name
+  description
+  color
+  maintenanceStartsAt
+  maintenanceEndsAt
+  status
+}
+    `;
+export const ScheduledEventWithRejectionFragmentDoc = gql`
+    fragment scheduledEventWithRejection on ScheduledEventWithRejection {
+  ... on Rejection {
+    reason
+  }
+  ... on ScheduledEvent {
+    id
+    startsAt
+    endsAt
+  }
+}
+    `;
 export const BasicUserDetailsFragmentDoc = gql`
     fragment basicUserDetails on BasicUserDetails {
   id
@@ -3807,7 +3820,6 @@ export const BasicUserDetailsFragmentDoc = gql`
   lastname
   organisation
   position
-  created
   placeholder
 }
     `;
@@ -3833,11 +3845,6 @@ export const PrepareDbDocument = gql`
 export const PrepareSchedulerDbDocument = gql`
     mutation prepareSchedulerDB($includeSeeds: Boolean!) {
   resetSchedulerDb(includeSeeds: $includeSeeds)
-}
-    `;
-export const AddEquipmentResponsibleDocument = gql`
-    mutation addEquipmentResponsible($equipmentResponsibleInput: EquipmentResponsibleInput!) {
-  addEquipmentResponsible(equipmentResponsibleInput: $equipmentResponsibleInput)
 }
     `;
 export const AssignEquipmentToScheduledEventDocument = gql`
@@ -3910,14 +3917,10 @@ export const GetEquipmentDocument = gql`
     maintenanceEndsAt
     autoAccept
     owner {
-      id
-      firstname
-      lastname
+      ...basicUserDetails
     }
     equipmentResponsible {
-      id
-      firstname
-      lastname
+      ...basicUserDetails
     }
     equipmentInstruments {
       id
@@ -3925,26 +3928,18 @@ export const GetEquipmentDocument = gql`
     }
   }
 }
-    `;
+    ${BasicUserDetailsFragmentDoc}`;
 export const GetEquipmentsDocument = gql`
     query getEquipments {
   equipments {
-    id
-    createdAt
-    updatedAt
-    name
-    description
-    color
-    maintenanceStartsAt
-    maintenanceEndsAt
-    autoAccept
+    ...equipment
     equipmentInstruments {
       id
       name
     }
   }
 }
-    `;
+    ${EquipmentFragmentDoc}`;
 export const UpdateEquipmentDocument = gql`
     mutation updateEquipment($id: Int!, $updateEquipmentInput: EquipmentInput!) {
   updateEquipment(id: $id, updateEquipmentInput: $updateEquipmentInput) {
@@ -3959,11 +3954,6 @@ export const UpdateEquipmentDocument = gql`
       autoAccept
     }
   }
-}
-    `;
-export const UpdateEquipmentOwnerDocument = gql`
-    mutation updateEquipmentOwner($updateEquipmentOwnerInput: UpdateEquipmentOwnerInput!) {
-  updateEquipmentOwner(updateEquipmentOwnerInput: $updateEquipmentOwnerInput)
 }
     `;
 export const GetUserInstrumentsDocument = gql`
@@ -4097,9 +4087,7 @@ export const GetInstrumentProposalBookingsDocument = gql`
       title
       proposalId
       proposer {
-        id
-        firstname
-        lastname
+        ...basicUserDetails
       }
     }
     createdAt
@@ -4117,7 +4105,7 @@ export const GetInstrumentProposalBookingsDocument = gql`
     }
   }
 }
-    `;
+    ${BasicUserDetailsFragmentDoc}`;
 export const GetProposalBookingDocument = gql`
     query getProposalBooking($id: Int!, $filter: ProposalBookingScheduledEventFilter!) {
   proposalBooking(id: $id) {
@@ -4134,9 +4122,7 @@ export const GetProposalBookingDocument = gql`
       title
       proposalId
       proposer {
-        id
-        firstname
-        lastname
+        ...basicUserDetails
       }
     }
     scheduledEvents(filter: $filter) {
@@ -4145,14 +4131,10 @@ export const GetProposalBookingDocument = gql`
       endsAt
       bookingType
       scheduledBy {
-        id
-        firstname
-        lastname
+        ...basicUserDetails
       }
       localContact {
-        id
-        firstname
-        lastname
+        ...basicUserDetails
       }
       status
       description
@@ -4161,16 +4143,10 @@ export const GetProposalBookingDocument = gql`
       id
       name
       beamlineManager {
-        id
-        firstname
-        lastname
-        organisation
+        ...basicUserDetails
       }
       scientists {
-        id
-        firstname
-        lastname
-        organisation
+        ...basicUserDetails
       }
     }
     createdAt
@@ -4179,7 +4155,7 @@ export const GetProposalBookingDocument = gql`
     allocatedTime
   }
 }
-    `;
+    ${BasicUserDetailsFragmentDoc}`;
 export const ReopenProposalBookingDocument = gql`
     mutation reopenProposalBooking($id: Int!) {
   reopenProposalBooking(id: $id) {
@@ -4187,18 +4163,16 @@ export const ReopenProposalBookingDocument = gql`
   }
 }
     `;
-export const ActivateScheduledEventDocument = gql`
-    mutation activateScheduledEvent($input: ActivateScheduledEventInput!) {
-  activateScheduledEvent(activateScheduledEvent: $input) {
+export const ActivateScheduledEventsDocument = gql`
+    mutation activateScheduledEvents($input: ActivateScheduledEventsInput!) {
+  activateScheduledEvents(activateScheduledEvents: $input) {
     error
-    scheduledEvent {
-      id
-      startsAt
-      endsAt
+    scheduledEvents {
+      ...scheduledEventWithRejection
     }
   }
 }
-    `;
+    ${ScheduledEventWithRejectionFragmentDoc}`;
 export const CreateScheduledEventDocument = gql`
     mutation createScheduledEvent($input: NewScheduledEventInput!) {
   createScheduledEvent(newScheduledEvent: $input) {
@@ -4209,31 +4183,24 @@ export const CreateScheduledEventDocument = gql`
       endsAt
       bookingType
       scheduledBy {
-        id
-        firstname
-        lastname
+        ...basicUserDetails
       }
       status
       description
     }
   }
 }
-    `;
+    ${BasicUserDetailsFragmentDoc}`;
 export const DeleteScheduledEventsDocument = gql`
     mutation deleteScheduledEvents($input: DeleteScheduledEventsInput!) {
   deleteScheduledEvents(deleteScheduledEventsInput: $input) {
     error
     scheduledEvents {
-      id
-      bookingType
-      startsAt
-      endsAt
-      description
-      status
+      ...scheduledEventWithRejection
     }
   }
 }
-    `;
+    ${ScheduledEventWithRejectionFragmentDoc}`;
 export const FinalizeScheduledEventDocument = gql`
     mutation finalizeScheduledEvent($input: FinalizeScheduledEventInput!) {
   finalizeScheduledEvent(finalizeScheduledEvent: $input) {
@@ -4261,8 +4228,7 @@ export const GetEquipmentScheduledEventsDocument = gql`
           title
           proposalId
           proposer {
-            firstname
-            lastname
+            ...basicUserDetails
           }
         }
       }
@@ -4271,19 +4237,15 @@ export const GetEquipmentScheduledEventsDocument = gql`
         name
       }
       scheduledBy {
-        id
-        firstname
-        lastname
+        ...basicUserDetails
       }
       localContact {
-        id
-        firstname
-        lastname
+        ...basicUserDetails
       }
     }
   }
 }
-    `;
+    ${BasicUserDetailsFragmentDoc}`;
 export const GetProposalBookingScheduledEventsDocument = gql`
     query getProposalBookingScheduledEvents($proposalBookingId: Int!) {
   proposalBookingScheduledEvents(proposalBookingId: $proposalBookingId) {
@@ -4292,20 +4254,16 @@ export const GetProposalBookingScheduledEventsDocument = gql`
     endsAt
     bookingType
     scheduledBy {
-      id
-      firstname
-      lastname
+      ...basicUserDetails
     }
     localContact {
-      id
-      firstname
-      lastname
+      ...basicUserDetails
     }
     status
     description
   }
 }
-    `;
+    ${BasicUserDetailsFragmentDoc}`;
 export const GetScheduledEventEquipmentsDocument = gql`
     query getScheduledEventEquipments($proposalBookingId: Int!, $scheduledEventId: Int!) {
   proposalBookingScheduledEvent(
@@ -4313,17 +4271,11 @@ export const GetScheduledEventEquipmentsDocument = gql`
     scheduledEventId: $scheduledEventId
   ) {
     equipments {
-      id
-      name
-      description
-      color
-      maintenanceStartsAt
-      maintenanceEndsAt
-      status
+      ...equipmentWithStatus
     }
   }
 }
-    `;
+    ${EquipmentWithStatusFragmentDoc}`;
 export const GetScheduledEventWithEquipmentsDocument = gql`
     query getScheduledEventWithEquipments($proposalBookingId: Int!, $scheduledEventId: Int!, $scheduledEventFilter: ProposalBookingScheduledEventFilter!) {
   proposalBookingScheduledEvent(
@@ -4348,8 +4300,7 @@ export const GetScheduledEventWithEquipmentsDocument = gql`
         title
         proposalId
         proposer {
-          firstname
-          lastname
+          ...basicUserDetails
         }
       }
       call {
@@ -4361,19 +4312,15 @@ export const GetScheduledEventWithEquipmentsDocument = gql`
       }
     }
     scheduledBy {
-      firstname
-      lastname
+      ...basicUserDetails
     }
     equipments {
-      id
-      name
-      maintenanceStartsAt
-      maintenanceEndsAt
-      status
+      ...equipmentWithStatus
     }
   }
 }
-    `;
+    ${BasicUserDetailsFragmentDoc}
+${EquipmentWithStatusFragmentDoc}`;
 export const GetScheduledEventsDocument = gql`
     query getScheduledEvents($filter: ScheduledEventFilter!, $scheduledEventFilter: ProposalBookingScheduledEventFilter!) {
   scheduledEvents(filter: $filter) {
@@ -4390,13 +4337,10 @@ export const GetScheduledEventsDocument = gql`
       name
     }
     scheduledBy {
-      firstname
-      lastname
+      ...basicUserDetails
     }
     localContact {
-      id
-      firstname
-      lastname
+      ...basicUserDetails
     }
     proposalBooking {
       id
@@ -4409,8 +4353,7 @@ export const GetScheduledEventsDocument = gql`
         title
         proposalId
         proposer {
-          firstname
-          lastname
+          ...basicUserDetails
         }
       }
       call {
@@ -4428,7 +4371,7 @@ export const GetScheduledEventsDocument = gql`
     }
   }
 }
-    `;
+    ${BasicUserDetailsFragmentDoc}`;
 export const GetScheduledEventsWithEquipmentsDocument = gql`
     query getScheduledEventsWithEquipments($proposalBookingId: Int!) {
   proposalBookingScheduledEvents(proposalBookingId: $proposalBookingId) {
@@ -4437,16 +4380,11 @@ export const GetScheduledEventsWithEquipmentsDocument = gql`
     endsAt
     status
     equipments {
-      id
-      name
-      description
-      maintenanceStartsAt
-      maintenanceEndsAt
-      status
+      ...equipmentWithStatus
     }
   }
 }
-    `;
+    ${EquipmentWithStatusFragmentDoc}`;
 export const ReopenScheduledEventDocument = gql`
     mutation reopenScheduledEvent($id: Int!) {
   reopenScheduledEvent(id: $id) {
@@ -4463,14 +4401,12 @@ export const UpdateScheduledEventDocument = gql`
       startsAt
       endsAt
       localContact {
-        id
-        firstname
-        lastname
+        ...basicUserDetails
       }
     }
   }
 }
-    `;
+    ${BasicUserDetailsFragmentDoc}`;
 export const GetUsersDocument = gql`
     query getUsers($filter: String, $first: Int, $offset: Int, $userRole: UserRole, $subtractUsers: [Int!]) {
   users(
@@ -4504,9 +4440,6 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     prepareSchedulerDB(variables: PrepareSchedulerDbMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<PrepareSchedulerDbMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<PrepareSchedulerDbMutation>(PrepareSchedulerDbDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'prepareSchedulerDB');
     },
-    addEquipmentResponsible(variables: AddEquipmentResponsibleMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<AddEquipmentResponsibleMutation> {
-      return withWrapper((wrappedRequestHeaders) => client.request<AddEquipmentResponsibleMutation>(AddEquipmentResponsibleDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'addEquipmentResponsible');
-    },
     assignEquipmentToScheduledEvent(variables: AssignEquipmentToScheduledEventMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<AssignEquipmentToScheduledEventMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<AssignEquipmentToScheduledEventMutation>(AssignEquipmentToScheduledEventDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'assignEquipmentToScheduledEvent');
     },
@@ -4530,9 +4463,6 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     updateEquipment(variables: UpdateEquipmentMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<UpdateEquipmentMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateEquipmentMutation>(UpdateEquipmentDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'updateEquipment');
-    },
-    updateEquipmentOwner(variables: UpdateEquipmentOwnerMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<UpdateEquipmentOwnerMutation> {
-      return withWrapper((wrappedRequestHeaders) => client.request<UpdateEquipmentOwnerMutation>(UpdateEquipmentOwnerDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'updateEquipmentOwner');
     },
     getUserInstruments(variables?: GetUserInstrumentsQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<GetUserInstrumentsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetUserInstrumentsQuery>(GetUserInstrumentsDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getUserInstruments');
@@ -4576,8 +4506,8 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     reopenProposalBooking(variables: ReopenProposalBookingMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<ReopenProposalBookingMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<ReopenProposalBookingMutation>(ReopenProposalBookingDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'reopenProposalBooking');
     },
-    activateScheduledEvent(variables: ActivateScheduledEventMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<ActivateScheduledEventMutation> {
-      return withWrapper((wrappedRequestHeaders) => client.request<ActivateScheduledEventMutation>(ActivateScheduledEventDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'activateScheduledEvent');
+    activateScheduledEvents(variables: ActivateScheduledEventsMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<ActivateScheduledEventsMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<ActivateScheduledEventsMutation>(ActivateScheduledEventsDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'activateScheduledEvents');
     },
     createScheduledEvent(variables: CreateScheduledEventMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<CreateScheduledEventMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateScheduledEventMutation>(CreateScheduledEventDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'createScheduledEvent');
