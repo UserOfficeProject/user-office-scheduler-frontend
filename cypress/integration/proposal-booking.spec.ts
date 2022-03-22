@@ -709,6 +709,8 @@ context('Proposal booking tests ', () => {
     });
 
     describe('Equipment assigned to scheduled event tests', () => {
+      let shouldAssignEquipmentResponsible = false;
+
       beforeEach(() => {
         cy.updateEquipment({
           id: initialDBData.equipments[0].id,
@@ -718,8 +720,9 @@ context('Proposal booking tests ', () => {
             autoAccept: initialDBData.equipments[0].autoAccept,
             instrumentIds: [initialDBData.instruments[0].id],
             equipmentResponsible: [
-              initialDBData.instrumentScientists[0].id,
-              initialDBData.instrumentScientists[1].id,
+              shouldAssignEquipmentResponsible
+                ? initialDBData.instrumentScientists[0].id
+                : 0,
             ],
             ownerUserId: 1,
           },
@@ -732,8 +735,9 @@ context('Proposal booking tests ', () => {
             autoAccept: initialDBData.equipments[1].autoAccept,
             instrumentIds: [initialDBData.instruments[0].id],
             equipmentResponsible: [
-              initialDBData.instrumentScientists[0].id,
-              initialDBData.instrumentScientists[1].id,
+              shouldAssignEquipmentResponsible
+                ? initialDBData.instrumentScientists[0].id
+                : 0,
             ],
             ownerUserId: 1,
           },
@@ -835,6 +839,8 @@ context('Proposal booking tests ', () => {
           .click();
 
         cy.get('.rbc-time-content .rbc-event').should('not.exist');
+        // NOTE: In the next tests should start assigning responsible people
+        shouldAssignEquipmentResponsible = true;
       });
 
       it('should be able to open time slot by clicking on the calendar equipment event if it is responsible person or owner', () => {
