@@ -121,11 +121,7 @@ export default function CreateEditEquipment() {
   if (id && !hasEditAccess) {
     history.goBack();
 
-    return (
-      <Box textAlign="center" mt={5}>
-        No access permissions
-      </Box>
-    );
+    return null;
   }
 
   const initialValues = equipment

@@ -717,6 +717,10 @@ context('Proposal booking tests ', () => {
             description: initialDBData.equipments[0].description,
             autoAccept: initialDBData.equipments[0].autoAccept,
             instrumentIds: [initialDBData.instruments[0].id],
+            equipmentResponsible: [
+              initialDBData.instrumentScientists[0].id,
+              initialDBData.instrumentScientists[1].id,
+            ],
             ownerUserId: 1,
           },
         });
@@ -727,6 +731,10 @@ context('Proposal booking tests ', () => {
             description: initialDBData.equipments[1].description,
             autoAccept: initialDBData.equipments[1].autoAccept,
             instrumentIds: [initialDBData.instruments[0].id],
+            equipmentResponsible: [
+              initialDBData.instrumentScientists[0].id,
+              initialDBData.instrumentScientists[1].id,
+            ],
             ownerUserId: 1,
           },
         });
@@ -830,18 +838,6 @@ context('Proposal booking tests ', () => {
       });
 
       it('should be able to open time slot by clicking on the calendar equipment event if it is responsible person or owner', () => {
-        // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
-        cy.visit('/equipments');
-        cy.contains(initialDBData.equipments[1].name)
-          .parent()
-          .find('[data-testid="VisibilityIcon"]')
-          .click();
-        cy.get('[data-cy="add-equipment-responsible"]').click();
-        cy.get('input[type="checkbox"]').first().click();
-        cy.get('[data-cy="assign-selected-users"]').click();
-        cy.get('[role=alert]').contains(/success/i);
-        // <-----------------------------------------------
-
         cy.visit('/calendar');
 
         cy.finishedLoading();
@@ -876,17 +872,6 @@ context('Proposal booking tests ', () => {
 
       it('should be able to view equipment assignment request from requests page for equipments that user is owner or responsible', () => {
         cy.initializeSession('UserOfficer');
-        // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
-        cy.visit('/equipments');
-        cy.contains(initialDBData.equipments[0].name)
-          .parent()
-          .find('[data-testid="VisibilityIcon"]')
-          .click();
-        cy.get('[data-cy="add-equipment-responsible"]').click();
-        cy.get('input[type="checkbox"]').first().click();
-        cy.get('[data-cy="assign-selected-users"]').click();
-        cy.get('[role=alert]').contains(/success/i);
-        // <-----------------------------------------------
 
         cy.visit('/requests');
 
@@ -913,18 +898,6 @@ context('Proposal booking tests ', () => {
       });
 
       it('should be able to accept / reject assignment request', () => {
-        // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
-        cy.visit('/equipments');
-        cy.contains(initialDBData.equipments[0].name)
-          .parent()
-          .find('[data-testid="VisibilityIcon"]')
-          .click();
-        cy.get('[data-cy="add-equipment-responsible"]').click();
-        cy.get('input[type="checkbox"]').first().click();
-        cy.get('[data-cy="assign-selected-users"]').click();
-        cy.get('[role=alert]').contains(/success/i);
-        // <-----------------------------------------------
-
         cy.visit('/equipments');
 
         cy.contains(initialDBData.equipments[0].name)
@@ -984,18 +957,6 @@ context('Proposal booking tests ', () => {
       });
 
       it('should show the assigned time slot on the equipment page', () => {
-        // TODO: When update refactor is merged change this to use just update equipment with new responsible ---->
-        cy.visit('/equipments');
-        cy.contains(initialDBData.equipments[1].name)
-          .parent()
-          .find('[data-testid="VisibilityIcon"]')
-          .click();
-        cy.get('[data-cy="add-equipment-responsible"]').click();
-        cy.get('input[type="checkbox"]').first().click();
-        cy.get('[data-cy="assign-selected-users"]').click();
-        cy.get('[role=alert]').contains(/success/i);
-        // <-----------------------------------------------
-
         cy.visit('/equipments');
         cy.contains(initialDBData.equipments[1].name)
           .parent()
