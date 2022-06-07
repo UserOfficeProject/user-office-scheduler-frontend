@@ -23,7 +23,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import moment, { Moment } from 'moment';
 import { useSnackbar } from 'notistack';
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, generatePath } from 'react-router';
+import { generatePath } from 'react-router';
+import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 import ScienceIcon from 'components/common/icons/ScienceIcon';

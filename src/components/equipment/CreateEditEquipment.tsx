@@ -28,7 +28,8 @@ import { TextField, CheckboxWithLabel, Autocomplete, Select } from 'formik-mui';
 import moment, { Moment } from 'moment';
 import { useSnackbar } from 'notistack';
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useHistory, generatePath } from 'react-router';
+import { generatePath } from 'react-router';
+import { useParams, useHistory } from 'react-router-dom';
 
 import FormikColorPicker from 'components/common/FormikColorPicker';
 import FormikDateTimeRangePicker from 'components/common/FormikDateTimeRangePicker';

@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Views } from 'react-big-calendar';
 // @ts-expect-error Using the toolbar from react-big-calendar but they are not exporting it.
 import CalendarNavigationToolbar from 'react-big-calendar/lib/Toolbar';
-import { useHistory } from 'react-router';
+import { useHistory } from 'react-router-dom';
 
 import { ScheduledEventFilter } from 'generated/sdk';
 import { useQuery } from 'hooks/common/useQuery';

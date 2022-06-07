@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useContext, useEffect, useState } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory } from 'react-router-dom';
 
 import { InstrumentAndEquipmentContext } from 'context/InstrumentAndEquipmentContext';
 import { BasicUserDetailsFragment, Equipment } from 'generated/sdk';
@@ -116,6 +116,7 @@ export default function InstrumentAndEquipmentFilter({
     }
 
     setSelectedInstrument(newSelectedInstruments);
+    console.log(history);
     history.push(`?${query}`);
   };
 

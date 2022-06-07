@@ -29,7 +29,7 @@ import React, {
   useContext,
 } from 'react';
 import { stringOrDate, View, Views } from 'react-big-calendar';
-import { useHistory } from 'react-router';
+import { useHistory } from 'react-router-dom';
 
 import Loader from 'components/common/Loader';
 import EquipmentBookingDialog from 'components/equipment/EquipmentBookingDialog';

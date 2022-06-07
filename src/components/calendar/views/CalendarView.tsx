@@ -12,7 +12,7 @@ import {
   Views,
 } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
-import { useHistory } from 'react-router';
+import { useHistory } from 'react-router-dom';
 
 import { AppContext } from 'context/AppContext';
 import {

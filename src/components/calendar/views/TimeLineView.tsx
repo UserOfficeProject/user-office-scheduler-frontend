@@ -13,7 +13,7 @@ import Timeline, {
 // @ts-expect-error @types/react-calendar-timeline is not updated with tle latest changes on react-calendar-timeline
 import containerResizeDetector from 'react-calendar-timeline/lib/resize-detector/container';
 import 'react-calendar-timeline/lib/Timeline.css';
-import { useHistory } from 'react-router';
+import { useHistory } from 'react-router-dom';
 
 import { InstrumentAndEquipmentContext } from 'context/InstrumentAndEquipmentContext';
 import { ScheduledEventBookingType, ScheduledEventFilter } from 'generated/sdk';
