@@ -221,10 +221,7 @@ jobs:
 
           export BUILD_TAG=${{ github.sha }}
 
-          docker-compose -f docker-compose.all.yml \
-            -f user-office-scheduler-backend/docker-compose.e2e.yml \
-            -f user-office-gateway/docker-compose.e2e.yml \
-            -f "$REPO_DIR_NAME/docker-compose.e2e.yml" \
+          docker-compose -f "$REPO_DIR_NAME/docker-compose.e2e.yml" \
             up --exit-code-from cypress
 
       - name: Upload cypres screenshots
