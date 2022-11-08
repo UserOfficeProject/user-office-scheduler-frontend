@@ -1940,6 +1940,15 @@ export type NumberInputConfig = {
   units: Array<Unit>;
 };
 
+export type OrcIdInformation = {
+  firstname: Maybe<Scalars['String']>;
+  lastname: Maybe<Scalars['String']>;
+  orcid: Maybe<Scalars['String']>;
+  orcidHash: Maybe<Scalars['String']>;
+  refreshToken: Maybe<Scalars['String']>;
+  token: Maybe<Scalars['String']>;
+};
+
 export enum NumberValueConstraint {
   NONE = 'NONE',
   ONLY_NEGATIVE = 'ONLY_NEGATIVE',
@@ -2348,6 +2357,7 @@ export type Query = {
   filesMetadata: Array<FileMetadata>;
   genericTemplate: Maybe<GenericTemplate>;
   genericTemplates: Maybe<Array<GenericTemplate>>;
+  getOrcIDInformation: Maybe<OrcIdInformation>;
   healthCheck: HealthStats;
   institutions: Maybe<Array<Institution>>;
   instrument: Maybe<Instrument>;
@@ -2535,6 +2545,11 @@ export type QueryGenericTemplateArgs = {
 
 export type QueryGenericTemplatesArgs = {
   filter?: InputMaybe<GenericTemplatesFilter>;
+};
+
+
+export type QueryGetOrcIdInformationArgs = {
+  authorizationCode: Scalars['String'];
 };
 
 

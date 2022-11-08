@@ -14,11 +14,11 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Cache app docker layers and image
         id: cached-image
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             /tmp/.buildx-layer-cache
@@ -30,7 +30,7 @@ jobs:
 
       - name: Set up Docker Buildx
         if: steps.cached-image.outputs.cache-hit != 'true'
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Build and cache image
         if: steps.cached-image.outputs.cache-hit != 'true'
@@ -45,10 +45,10 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Login to GitHub Packages Docker Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: docker.pkg.github.com
           username: ${{ github.actor }}
@@ -74,10 +74,10 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Login to GitHub Packages Docker Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: docker.pkg.github.com
           username: ${{ github.actor }}
@@ -92,7 +92,7 @@ jobs:
 
       - name: Load app cache
         id: cached-image
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             /tmp/.buildx-layer-cache
@@ -142,12 +142,17 @@ jobs:
 
           UO_BE_TAGS=$(check_feature ${{ github.head_ref }} \
             https://registry.hub.docker.com/v1/repositories/dmsc/duo-backend/tags \
-            https://api.github.com/repos/UserOfficeProject/user-office-backend/branches
+            https://api.github.com/repos/UserOfficeProject/user-office-core/branches
           )
 
           GATEWAY_TAGS=$(check_feature ${{ github.head_ref }} \
             https://registry.hub.docker.com/v1/repositories/dmsc/duo-gateway/tags \
             https://api.github.com/repos/UserOfficeProject/user-office-gateway/branches
+          )
+
+          FACTORY_TAGS=$(check_feature ${{ github.head_ref }} \
+            https://registry.hub.docker.com/v1/repositories/dmsc/duo-factory/tags \
+            https://api.github.com/repos/UserOfficeProject/user-office-factory/branches
           )
 
           SCHEDULER_BE_TAG=develop
@@ -165,16 +170,23 @@ jobs:
             GATEWAY_TAG="${{ github.head_ref }}"
           fi
 
-          echo ::set-output name=SCHEDULER_BE_TAG::${SCHEDULER_BE_TAG}
-          echo ::set-output name=UO_BE_TAG::${UO_BE_TAG}
-          echo ::set-output name=GATEWAY_TAG::${GATEWAY_TAG}
+          FACTORY_TAG=develop
+          if [[ $FACTORY_TAGS == "2" ]]; then
+            FACTORY_TAG="${{ github.head_ref }}"
+          fi
+
+          echo "SCHEDULER_BE_TAG=${SCHEDULER_BE_TAG}" >> $GITHUB_OUTPUT
+          echo "UO_BE_TAG=${UO_BE_TAG}" >> $GITHUB_OUTPUT
+          echo "GATEWAY_TAG=${GATEWAY_TAG}" >> $GITHUB_OUTPUT
+          echo "FACTORY_TAG=${FACTORY_TAG}" >> $GITHUB_OUTPUT
 
       - name: Download required repositories
         run: |
           cd "$GITHUB_WORKSPACE/.."
           git clone --depth 1 --branch "${{ steps.resolve_rep.outputs.SCHEDULER_BE_TAG }}" https://github.com/UserOfficeProject/user-office-scheduler-backend.git
-          git clone --depth 1 --branch "${{ steps.resolve_rep.outputs.UO_BE_TAG }}" https://github.com/UserOfficeProject/user-office-backend.git
+          git clone --depth 1 --branch "${{ steps.resolve_rep.outputs.UO_BE_TAG }}" https://github.com/UserOfficeProject/user-office-core.git
           git clone --depth 1 --branch "${{ steps.resolve_rep.outputs.GATEWAY_TAG }}" https://github.com/UserOfficeProject/user-office-gateway.git
+          git clone --depth 1 --branch "${{ steps.resolve_rep.outputs.FACTORY_TAG }}" https://github.com/UserOfficeProject/user-office-factory.git
 
       - name: Setup base docker-compose
         run: |
@@ -192,7 +204,7 @@ jobs:
           REPO_DIR_NAME=$(basename $GITHUB_WORKSPACE)
 
           export USER_OFFICE_BACKEND_TAG=${{ steps.resolve_rep.outputs.UO_BE_TAG }}
-          export USER_OFFICE_BACKEND_DIR=user-office-backend
+          export USER_OFFICE_BACKEND_DIR=user-office-core/apps/user-office-backend
           export USER_OFFICE_BACKEND=http://backend:4000/graphql
           export USER_OFFICE_ENDPOINT=$USER_OFFICE_BACKEND
 
@@ -204,13 +216,13 @@ jobs:
 
           export USER_OFFICE_GATEWAY_TAG=${{ steps.resolve_rep.outputs.GATEWAY_TAG }}
 
+          export USER_OFFICE_FACTORY_TAG=${{ steps.resolve_rep.outputs.FACTORY_TAG }}
           export USER_OFFICE_FACTORY_ENDPOINT=noop
 
           export BUILD_TAG=${{ github.sha }}
 
           docker-compose -f docker-compose.all.yml \
             -f user-office-scheduler-backend/docker-compose.e2e.yml \
-            -f user-office-backend/docker-compose.e2e.yml \
             -f user-office-gateway/docker-compose.e2e.yml \
             -f "$REPO_DIR_NAME/docker-compose.e2e.yml" \
             up --exit-code-from cypress
@@ -230,7 +242,7 @@ jobs:
     steps:
       - name: Load app cache
         id: cached-image
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             /tmp/.buildx-layer-cache
@@ -252,7 +264,7 @@ jobs:
           docker load --input /tmp/.buildx-image-cache/img.tar
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
