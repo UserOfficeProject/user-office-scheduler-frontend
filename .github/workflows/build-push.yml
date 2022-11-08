@@ -43,6 +43,7 @@ jobs:
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
           # set output variable accessible in the action
           echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+
       # For debugging capture the selected branch
       - name: Extracted branch
         run: echo "Extracted branch ${{ steps.extract_branch.outputs.branch }}"
@@ -58,6 +59,7 @@ jobs:
           tags: |
             dmsc/duo-scheduler-frontend:${{ steps.extract_branch.outputs.branch }}
             ghcr.io/userofficeproject/user-office-scheduler-frontend:${{ steps.extract_branch.outputs.branch }}
+
       - name: Trigger pipeline
         run: |
           REPOSITORY=${{ github.repository }}
