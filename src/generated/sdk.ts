@@ -255,6 +255,7 @@ export type CreateProposalWorkflowInput = {
 export enum DataType {
   BOOLEAN = 'BOOLEAN',
   DATE = 'DATE',
+  DYNAMIC_MULTIPLE_CHOICE = 'DYNAMIC_MULTIPLE_CHOICE',
   EMBELLISHMENT = 'EMBELLISHMENT',
   FEEDBACK_BASIS = 'FEEDBACK_BASIS',
   FILE_UPLOAD = 'FILE_UPLOAD',
@@ -323,6 +324,15 @@ export enum DependenciesLogicOperator {
   AND = 'AND',
   OR = 'OR'
 }
+
+export type DynamicMultipleChoiceConfig = {
+  isMultipleSelect: Scalars['Boolean'];
+  required: Scalars['Boolean'];
+  small_label: Scalars['String'];
+  tooltip: Scalars['String'];
+  url: Scalars['String'];
+  variant: Scalars['String'];
+};
 
 export type EmbellishmentConfig = {
   html: Scalars['String'];
@@ -562,7 +572,7 @@ export type FieldConditionInput = {
   params: Scalars['String'];
 };
 
-export type FieldConfig = BooleanConfig | DateConfig | EmbellishmentConfig | FeedbackBasisConfig | FileUploadConfig | GenericTemplateBasisConfig | IntervalConfig | NumberInputConfig | ProposalBasisConfig | ProposalEsiBasisConfig | RichTextInputConfig | SampleBasisConfig | SampleDeclarationConfig | SampleEsiBasisConfig | SelectionFromOptionsConfig | ShipmentBasisConfig | SubTemplateConfig | TextInputConfig | VisitBasisConfig;
+export type FieldConfig = BooleanConfig | DateConfig | DynamicMultipleChoiceConfig | EmbellishmentConfig | FeedbackBasisConfig | FileUploadConfig | GenericTemplateBasisConfig | IntervalConfig | NumberInputConfig | ProposalBasisConfig | ProposalEsiBasisConfig | RichTextInputConfig | SampleBasisConfig | SampleDeclarationConfig | SampleEsiBasisConfig | SelectionFromOptionsConfig | ShipmentBasisConfig | SubTemplateConfig | TextInputConfig | VisitBasisConfig;
 
 export type FieldDependency = {
   condition: FieldCondition;
