@@ -39,6 +39,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           build-args: BUILD_VERSION=${{ github.sha }}
+          platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: ghcr.io/userofficeproject/user-office-scheduler-frontend:${{ steps.extract_branch.outputs.branch }}
 
